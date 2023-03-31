@@ -1,0 +1,22 @@
+(library
+ (name fry)
+ (public_name fry)
+ (flags (:standard
+         (-w -27-33-26-9-21-32)
+         ))
+ (libraries
+  lwt
+  lwt.unix
+  lwt_react
+  containers
+  )
+;; (preprocess
+;;   (pps
+;;     ppx_deriving.std
+;;     ppx_deriving_yojson
+;;   )
+;; )
+ )
+
+
+
