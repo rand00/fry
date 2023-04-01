@@ -9,3 +9,24 @@ pretty obvious, though I havn't yet seen examples of this. The rhythms can contr
 
 In the `examples` directory you can see how `fry` can be used.
 
+## Using `fry` in your own project
+
+Currently `fry` is not released to `opam` yet, but you can `git clone` this repository into a subdir of your own
+project that also uses `dune` (or make a `fry` symlink pointing at the git clone somewhere else)  - then `dune` 
+will find the `fry` library when you depend on it in your `dune` file.
+See `examples/beat/dune` for an example.
+
+## Compiling
+
+Compiling all examples and the library:
+```bash
+dune build
+```
+
+## Running examples:
+
+You pass the path of the example `main.ml` with `ml` replaced by `exe` to `dune exec`:
+```bash
+dune exec examples/ratchet_002/main.exe
+```
+
