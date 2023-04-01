@@ -1,5 +1,10 @@
 
-type 'a t = 'a list
+module T = struct 
+
+  type 'a t = 'a list
+
+end
+include T
 
 let rotate_left ~n l =
   let n = n mod CCList.length l in
@@ -26,7 +31,7 @@ let to_string elem_to_string =
 
 module Bool = struct
 
-  type t = bool list
+  type t = bool T.t
   
   let is_on ~tick rhythm =
     CCList.nth_opt rhythm (tick mod (List.length rhythm))
@@ -55,7 +60,7 @@ end
 
 module Option = struct
 
-  type 'a t = 'a option list
+  type 'a t = 'a option T.t
   
   let get ~tick rhythm =
     CCList.nth_opt rhythm (tick mod (List.length rhythm))
@@ -86,6 +91,8 @@ module Option = struct
 end
 
 module Euclidean = struct 
+
+  type t = bool T.t
 
   let split_on_change ~changed l =
     let rec aux acc = function
