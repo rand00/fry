@@ -47,7 +47,45 @@ module Euclidean = struct
 
 end
 
-let is_on ~tick rhytm = List.nth rhytm (tick mod (List.length rhytm))
+module Bool = struct
+  
+  let is_on ~tick rhythm =
+    CCList.nth_opt rhythm (tick mod (List.length rhythm))
+    |> CCOption.exists CCFun.id
+
+  let mapi f l =
+    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
+      if v then
+        let acc_rhythm = Some (f i) :: acc_rhythm in
+        succ i, acc_rhythm
+      else
+        i, acc_rhythm
+    ) (0, [])
+    |> snd
+    |> CCList.rev
+
+end
+
+module Option = struct
+
+  let get ~tick rhythm =
+    CCList.nth_opt rhythm (tick mod (List.length rhythm))
+    |> CCOption.flatten
+
+  let is_on ~tick rhythm = get ~tick rhythm |> Option.is_some
+  
+  let mapi f l =
+    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
+      match v with
+      | None -> i, acc_rhythm
+      | Some v -> 
+        let acc_rhythm = Some (f i v) :: acc_rhythm in
+        succ i, acc_rhythm
+    ) (0, [])
+    |> snd
+    |> CCList.rev
+
+end
 
 let rotate_left ~n l =
   let n = n mod CCList.length l in
