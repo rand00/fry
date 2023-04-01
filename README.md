@@ -37,7 +37,18 @@ See `examples/beat/dune` for an example.
 
 ## Compiling
 
-Compiling all examples and the library:
+Clone repo:
+```bash
+git clone https://github.com/rand00/fry.git
+cd fry
+```
+
+Install dependencies:
+```bash
+opam install lwt lwt_react containers
+```
+
+Compile examples and the library:
 ```bash
 dune build
 ```
@@ -50,3 +61,5 @@ to `dune exec`:
 dune exec examples/ratchet_002/main.exe
 ```
 
+.. note that the example is recompiled before execution this way, so you can
+play around with the examples and see the results with this single command.
