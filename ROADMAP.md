@@ -1,7 +1,6 @@
 # Roadmap / feature-ideas 
 
 * create more operators for manipulating rhythms ('a list)
-  * shuffle
   * drop_last (CCList?)
   * ..
 * come up with way of laying out beats in a simple way, and mapping them to a more complex rhythmic structure
