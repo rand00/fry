@@ -47,7 +47,7 @@ module Euclidean = struct
 
 end
 
-let is_beat ~tick rhytm = List.nth rhytm (tick mod (List.length rhytm))
+let is_on ~tick rhytm = List.nth rhytm (tick mod (List.length rhytm))
 
 let rotate_left ~n l =
   let n = n mod CCList.length l in

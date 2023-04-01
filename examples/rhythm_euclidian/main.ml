@@ -5,7 +5,7 @@ module Beat = Fry.Beat.Make(struct
   end)
 
 let rhythm_e =
-  let rhytms = Fry.Rhythm.[
+  let rhythms = Fry.Rhythm.[
     Euclidean.make ~len:5 ~n:4;
     Euclidean.make ~len:5 ~n:3;
     Euclidean.make ~len:8 ~n:7 |> rotate_left ~n:4;
@@ -13,8 +13,9 @@ let rhythm_e =
   in
   Beat.e
   |> E.fmap (fun tick ->
-    let beat = CCList.for_all (Fry.Rhythm.is_beat ~tick) rhytms in
-    if beat then Some tick else None
+    if CCList.for_all (Fry.Rhythm.is_on ~tick) rhythms then
+      Some tick
+    else None
   )
 
 let _out =
