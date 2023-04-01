@@ -64,6 +64,11 @@ let shuffle l =
   CCArray.shuffle a;
   CCArray.to_list a
 
+let drop_last n l =
+  CCList.rev l
+  |> CCList.drop n
+  |> CCList.rev
+
 let show_list l = CCList.to_string ~start:"[ " ~stop:" ]" ~sep:"; " l
 
 let to_string r =
