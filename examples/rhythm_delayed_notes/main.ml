@@ -8,7 +8,7 @@ module Beat = Fry.Beat.Make(struct
   end)
 
 let rhythm = Fry.Rhythm.(
-  Euclidean.make ~len:4 ~n:4 |> Bool.mapi (fun i ->
+  [ true; true; true; true ] |> Bool.mapi (fun i ->
     if i = 2 then `Delay else `Normal
   )
 )
