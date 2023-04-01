@@ -25,7 +25,7 @@ dune build
 
 ## Running examples:
 
-You pass the path of the example `main.ml` with `ml` replaced by `exe` to `dune exec`:
+You pass the path of the examples `main.ml` (with `ml` replaced by `exe`) to `dune exec`:
 ```bash
 dune exec examples/ratchet_002/main.exe
 ```
