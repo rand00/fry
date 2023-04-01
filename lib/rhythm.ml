@@ -59,6 +59,7 @@ module Bool = struct
         let acc_rhythm = Some (f i) :: acc_rhythm in
         succ i, acc_rhythm
       else
+        let acc_rhythm = None :: acc_rhythm in
         i, acc_rhythm
     ) (0, [])
     |> snd
@@ -77,7 +78,9 @@ module Option = struct
   let mapi f l =
     l |> CCList.fold_left (fun (i, acc_rhythm) v ->
       match v with
-      | None -> i, acc_rhythm
+      | None ->
+        let acc_rhythm = None :: acc_rhythm in
+        i, acc_rhythm
       | Some v -> 
         let acc_rhythm = Some (f i v) :: acc_rhythm in
         succ i, acc_rhythm
