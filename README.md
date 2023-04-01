@@ -2,7 +2,7 @@
 
 *This library is in an experimental state.*
 
-The idea of `fry` is to deliver a set of operators for defining rhythms 
+`fry` delivers a set of operators for defining rhythms 
 using *functional reactive programming* (FRP). 
 FRP is really good for expressing time-semantics in a declarative way, 
 so using it to build rhythmic machines is 
@@ -11,14 +11,14 @@ The rhythms can control anything you like - for example
 [SuperCollider](https://supercollider.github.io/) via 
 [OSC](https://en.wikipedia.org/wiki/Open_Sound_Control). 
 
-`fry` not only lets you define rhythms statically, but enables
-creation of more complex and dynamic rhythmic machinery;
+`fry` lets you define rhythms statically, but also enables
+creation of complex and dynamic rhythmic machinery;
 which includes making drum-machines or generative rhythms. You 
 add your own inputs and forms of interaction.
 
-A goal of `fry` is to both cater towards experimental musicians/artists - 
-but also let FRP shine via creating operators that exploit existing FRP semantics in 
-interesting ways.
+A goal of `fry` is to both cater towards experimental artists - 
+but also let FRP shine via creating operators that exploit the existing 
+declarative FRP semantics in interesting ways.
 This is based on the belief that systems for construction should influence the output,
 by being used to create the most elegant things possible with the available 
 interface - which contrasts with a method of product-design, where 
