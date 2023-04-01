@@ -11,17 +11,17 @@ The rhythms can control anything you like - for example
 [SuperCollider](https://supercollider.github.io/) via 
 [OSC](https://en.wikipedia.org/wiki/Open_Sound_Control). 
 
-`fry` not only lets you define statically defined rhythms, but has the 
-goal of enabling creation of more complex and dynamic rhythmic machinery;
-which includes dynamic changes to rhythms by some form of user interaction
-or generative rhythms. 
+`fry` not only lets you define rhythms statically, but enables
+creation of more complex and dynamic rhythmic machinery;
+which includes making drum-machines or generative rhythms. You 
+add your own inputs and forms of interaction.
 
-Another goal is to both cater towards what experimental musicians/artists 
-could want as features - but also let FRP shine via creating operators
-that exploit existing FRP operators and semantics.
-This idea is based on the belief that systems should influence the output,
+A goal of `fry` is to both cater towards experimental musicians/artists - 
+but also let FRP shine via creating operators that exploit existing FRP semantics in 
+interesting ways.
+This is based on the belief that systems for construction should influence the output,
 by being used to create the most elegant things possible with the available 
-interfaces - which contrasts with a method of product-design, where 
+interface - which contrasts with a method of product-design, where 
 programming is just 'a means to an end'.
 
 In the `examples` directory you can see how `fry` can be used.
