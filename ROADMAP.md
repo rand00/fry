@@ -18,3 +18,5 @@
   * make sure that `fry` lib doesn't end up depending on notty this way - guess not
 * make `fry` not depend on lwt.unix - Fry.Beat.Make should get passed a sleep proc
   * possibly make a specialized version of `fry` that depends on lwt.unix?
+* guarantee the timing of events in Fry.Beat.Make relative to start-time
+  * < will e.g. allow synchronization with other music
