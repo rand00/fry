@@ -1,5 +1,89 @@
 
-type t = bool list
+type 'a t = 'a list
+
+let rotate_left ~n l =
+  let n = n mod CCList.length l in
+  let l, l' = CCList.take_drop n l in
+  l' @ l
+
+let rotate_right ~n l =
+  CCList.rev l
+  |> rotate_left ~n
+  |> CCList.rev
+
+let shuffle l =
+  let a = CCArray.of_list l in
+  CCArray.shuffle a;
+  CCArray.to_list a
+
+let drop_last n l =
+  CCList.rev l
+  |> CCList.drop n
+  |> CCList.rev
+
+let to_string elem_to_string =
+  CCList.to_string ~start:"[ " ~stop:" ]" ~sep:"; " elem_to_string
+
+module Bool = struct
+
+  type t = bool list
+  
+  let is_on ~tick rhythm =
+    CCList.nth_opt rhythm (tick mod (List.length rhythm))
+    |> CCOption.exists CCFun.id
+
+  let mapi f l =
+    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
+      if v then
+        let acc_rhythm = Some (f i) :: acc_rhythm in
+        succ i, acc_rhythm
+      else
+        let acc_rhythm = None :: acc_rhythm in
+        i, acc_rhythm
+    ) (0, [])
+    |> snd
+    |> CCList.rev
+
+  let to_string v =
+    let bool_to_string = function
+      | true -> "true"
+      | false -> "false"
+    in
+    to_string bool_to_string v
+
+end
+
+module Option = struct
+
+  type 'a t = 'a option list
+  
+  let get ~tick rhythm =
+    CCList.nth_opt rhythm (tick mod (List.length rhythm))
+    |> CCOption.flatten
+
+  let is_on ~tick rhythm = get ~tick rhythm |> Option.is_some
+  
+  let mapi f l =
+    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
+      match v with
+      | None ->
+        let acc_rhythm = None :: acc_rhythm in
+        i, acc_rhythm
+      | Some v -> 
+        let acc_rhythm = Some (f i v) :: acc_rhythm in
+        succ i, acc_rhythm
+    ) (0, [])
+    |> snd
+    |> CCList.rev
+
+  let to_string elem_to_string v =
+    let aux = function
+      | None -> "None"
+      | Some v -> elem_to_string v
+    in
+    to_string aux v
+
+end
 
 module Euclidean = struct 
 
@@ -46,76 +130,4 @@ module Euclidean = struct
  *   assert (euclidean ~len:8 ~n:6 = [true; false; true; true; true; false; true; true ]) *)
 
 end
-
-module Bool = struct
-  
-  let is_on ~tick rhythm =
-    CCList.nth_opt rhythm (tick mod (List.length rhythm))
-    |> CCOption.exists CCFun.id
-
-  let mapi f l =
-    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
-      if v then
-        let acc_rhythm = Some (f i) :: acc_rhythm in
-        succ i, acc_rhythm
-      else
-        let acc_rhythm = None :: acc_rhythm in
-        i, acc_rhythm
-    ) (0, [])
-    |> snd
-    |> CCList.rev
-
-end
-
-module Option = struct
-
-  let get ~tick rhythm =
-    CCList.nth_opt rhythm (tick mod (List.length rhythm))
-    |> CCOption.flatten
-
-  let is_on ~tick rhythm = get ~tick rhythm |> Option.is_some
-  
-  let mapi f l =
-    l |> CCList.fold_left (fun (i, acc_rhythm) v ->
-      match v with
-      | None ->
-        let acc_rhythm = None :: acc_rhythm in
-        i, acc_rhythm
-      | Some v -> 
-        let acc_rhythm = Some (f i v) :: acc_rhythm in
-        succ i, acc_rhythm
-    ) (0, [])
-    |> snd
-    |> CCList.rev
-
-end
-
-let rotate_left ~n l =
-  let n = n mod CCList.length l in
-  let l, l' = CCList.take_drop n l in
-  l' @ l
-
-let rotate_right ~n l =
-  CCList.rev l
-  |> rotate_left ~n
-  |> CCList.rev
-
-let shuffle l =
-  let a = CCArray.of_list l in
-  CCArray.shuffle a;
-  CCArray.to_list a
-
-let drop_last n l =
-  CCList.rev l
-  |> CCList.drop n
-  |> CCList.rev
-
-let show_list l = CCList.to_string ~start:"[ " ~stop:" ]" ~sep:"; " l
-
-let to_string r =
-  let bool_to_string = function
-    | true -> "true"
-    | false -> "false"
-  in
-  show_list bool_to_string r
 
