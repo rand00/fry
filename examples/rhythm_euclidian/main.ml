@@ -13,7 +13,7 @@ let rhythm_e =
   in
   Beat.e
   |> E.fmap (fun tick ->
-    if CCList.for_all (Fry.Rhythm.is_on ~tick) rhythms then
+    if CCList.for_all (Fry.Rhythm.Bool.is_on ~tick) rhythms then
       Some tick
     else None
   )
