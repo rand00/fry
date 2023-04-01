@@ -1,8 +1,6 @@
 # Roadmap / feature-ideas 
 
 * create more operators for manipulating rhythms ('a list)
-  * drop_last (CCList?)
-  * ..
 * come up with way of laying out beats in a simple way, and mapping them to a more complex rhythmic structure
 * brainstorm on if Lwt_react semantics of delaying events should be used 
   * or if it's better to stick to a grid of events
@@ -18,3 +16,5 @@
 * make example with more complex generative rhythm
 * make example that uses notty for both rhythm modification + colored screen output
   * make sure that `fry` lib doesn't end up depending on notty this way - guess not
+* make `fry` not depend on lwt.unix - Fry.Beat.Make should get passed a sleep proc
+  * possibly make a specialized version of `fry` that depends on lwt.unix?
