@@ -59,6 +59,11 @@ let rotate_right ~n l =
   |> rotate_left ~n
   |> CCList.rev
 
+let shuffle l =
+  let a = CCArray.of_list l in
+  CCArray.shuffle a;
+  CCArray.to_list a
+
 let show_list l = CCList.to_string ~start:"[ " ~stop:" ]" ~sep:"; " l
 
 let to_string r =
