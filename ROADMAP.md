@@ -14,6 +14,13 @@
   * e.g. 
     * one slow beat is quantized to fit on top of fast beat?
 * make example with more complex generative rhythm
+  * involving e.g.:
+    * dynamic change of rhythms based on randomness
+    * some looping tendencies, so it's not all randomness
+    * dynamically changing beat bpm's
+      * let one rhythm change the bpm of another with envelope 
+        * .. i.e. effect rolling off over time, after note has shot
+      * < @idea; maybe this becomes own example 
 * make example that uses notty for both rhythm modification + colored screen output
   * make sure that `fry` lib doesn't end up depending on notty this way - guess not
 * make `fry` not depend on lwt.unix - Fry.Beat.Make should get passed a sleep proc
