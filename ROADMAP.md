@@ -28,3 +28,4 @@
     * @idea; there could also be a 'stop ~when' where 'when' specifies a timeout for GC
   * I guess there should also be a module type so one can create it as a first-class module
     * try out if a 'make'-function makes more sense syntactically 
+* create example with dynamically modified and created rhythms
