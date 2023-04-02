@@ -39,6 +39,8 @@ module Bool = struct
     CCList.nth_opt rhythm (tick mod (List.length rhythm))
     |> CCOption.exists CCFun.id
 
+  let count rhythm = CCList.count CCFun.id rhythm
+  
   let mapi f l =
     l |> CCList.fold_left (fun (i, acc_rhythm) v ->
       if v then
@@ -69,6 +71,8 @@ module Option = struct
     |> CCOption.flatten
 
   let is_on ~tick rhythm = get ~tick rhythm |> Option.is_some
+  
+  let count rhythm = CCList.count CCOption.is_some rhythm
   
   let mapi f l =
     l |> CCList.fold_left (fun (i, acc_rhythm) v ->
