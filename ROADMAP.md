@@ -1,18 +1,29 @@
 # Roadmap / feature-ideas 
 
-* create more operators for manipulating rhythms ('a list)
-* come up with way of laying out beats in a simple way, and mapping them to a more complex rhythmic structure
+* make example where (several?) rhythms are defined manually 
+  * with 
+    * 't'/'f' aliases for true/false 
+      * this way rhythms can be visualized relative to eachother in code 
+    * Bool.mapi for configuring each beat with spec for:
+      * delay
+      * ratchet
+      * how to modulate output (e.g. colour)
+  * if several rhythms; 
+    * make them trigger their own part of the screen with notty
+      * .. several rhythms are hard to understand with printlines alone
+* come up with more ways of laying out beats in a simple way, 
+  * and then mapping them to a more complex rhythmic structure
+    * < check out 'bottom tsh' language for inspiration
 * brainstorm on if Lwt_react semantics of delaying events should be used 
   * or if it's better to stick to a grid of events
-* ratchet; brainstorm on if it could be wanted to trigger a short sequence of events that are not later overruled 
-  by next event in baseline event-seq
-* make example where a more complex note type is used, which bears info about how to modulate different values
-  * or about if ratchet should be triggered 
-  * etc.
-* make example where a specific rhythm is sped up (e.g. by a multiplier), but other rhythms are not
+* ratchet; brainstorm on if it could be wanted to trigger a short sequence of 
+  events that are not later overruled by next event in baseline event-seq
+* make example where a specific rhythm is sped up dynamically (e.g. by an integer multiplier), 
+  * but other rhythms are not
 * should Beat's be able to be synchronized somehow?
   * e.g. 
     * one slow beat is quantized to fit on top of fast beat?
+      * (i.e. for beats that are not derived from eachother)
 * make example with more complex generative rhythm
   * involving e.g.:
     * dynamic change of rhythms based on randomness
