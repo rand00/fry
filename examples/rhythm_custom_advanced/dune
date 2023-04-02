@@ -1,0 +1,13 @@
+(executable
+ (name main)
+ (modes native)
+ (flags (:standard
+         (-w -27-33-32-26)
+         ))
+ (libraries
+  fry
+  lwt
+  lwt_react
+  notty.lwt
+  )
+ )

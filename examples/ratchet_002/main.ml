@@ -7,13 +7,18 @@ module Fast_beat = Fry.Beat.Make(struct
 let beat_e = Fast_beat.e |> Fry.Beat.divide_speed ~by:6
 
 let ratchet_e =
-  let f ~v ~i ~v_ratchet ~i_ratchet =
-    if i_ratchet < 3 then Some (v_ratchet, "ratchet") else None
+  let ratchet ~v ~i =
+    let f ~v_ratchet ~i_ratchet =
+      if i_ratchet < 3 then Some (v_ratchet, "ratchet") else None
+    in
+    if i mod 4 = 0 then
+      Some (Fast_beat.e, f)
+    else
+      None
   in
-  let pred ~v ~i = i mod 4 = 0 in
   beat_e
   |> E.map (fun v -> v, "beat")
-  |> Fry.Ratchet.every' ~pred ~switch_e:Fast_beat.e ~f
+  |> Fry.Ratchet.choose ~on:ratchet
 
 let _out =
   ratchet_e |> E.trace (fun (i, tag) ->
