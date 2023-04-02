@@ -20,3 +20,11 @@
   * possibly make a specialized version of `fry` that depends on lwt.unix?
 * guarantee the timing of events in Fry.Beat.Make relative to start-time
   * < will e.g. allow synchronization with other music
+* make Beat.Make useable for dynamic creation, 
+  * which means some way to 'GC'/stop the beat
+    * e.g. including a 'stop' proc, that: 
+      * stops lwt-loop
+      * stops 's' and 'e'
+    * @idea; there could also be a 'stop ~when' where 'when' specifies a timeout for GC
+  * I guess there should also be a module type so one can create it as a first-class module
+    * try out if a 'make'-function makes more sense syntactically 
