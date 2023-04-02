@@ -26,6 +26,8 @@ let drop_last n l =
   |> CCList.drop n
   |> CCList.rev
 
+let index ~tick rhythm = tick mod List.length rhythm
+
 let to_string elem_to_string =
   CCList.to_string ~start:"[ " ~stop:" ]" ~sep:"; " elem_to_string
 
