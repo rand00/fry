@@ -20,7 +20,7 @@ let rhythm_e =
 
 let _out =
   rhythm_e |> E.trace (fun i ->
-    Printf.printf "euclidian rhythms on tick = %d\n%!" i
+    Printf.printf "merged polyrhythmic euclidians on tick = %d\n%!" i
   )
 
 let () = Lwt_main.run @@ Beat.run ()
