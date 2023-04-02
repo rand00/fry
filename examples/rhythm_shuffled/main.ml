@@ -28,7 +28,7 @@ let rhythm_e =
 
 let _out =
   rhythm_e |> E.trace (fun i ->
-    Printf.printf "probabilistic notes in a rhythm = %d\n%!" i
+    Printf.printf "shuffled rhythm = %d\n%!" i
   )
 
 let () = Lwt_main.run @@ Beat.run ()
