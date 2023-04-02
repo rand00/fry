@@ -1,13 +1,5 @@
 open Lwt_react
 
-(*goto brainstorm on interface:
-  * should have several ways to specify ratchets
-    * one being e.g. `Ratchet.every ~n ~f ~ratchet_e e`
-      * where f is of type: ('e0 -> ratchet_v:'e1 -> int -> 'e0 option)
-    * another being `Ratchet.Rhythm.index`
-      * where the index is relative to rhythm start somehow
-*)
-
 let every ~n ~switch_e e =
   e
   |> E.fold (fun i _ -> succ i) (-1)
