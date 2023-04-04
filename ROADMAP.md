@@ -3,18 +3,7 @@
 * @idea; make a Fry.Envelope module that has helpers for creating high-fps signals defining envelopes
   * being given arbitrary functions (including prebuilt ones) to define the envelopes 
   * speed being defined by an fps rate 
-  * idea; should enable creation of a 'global envelope' that morphs between envelopes (constructive interference?)
-  * note that input rhythm-note is syncd with *attack* of env
-* @idea; allow user to specify that beat should have limited lifetime?
-  * or let user control lifetime themselves, by calling a 'stop' proc?
-  * lifetimes can be:
-    * amount of events shot 
-    * timeout
-    * till some given thread resolves
-* Beat.Make has an 'e' and 's' - but divide speed operates only on 'e'
-  * should Beat.Make include a function to derive full modules with divided speed?
-  * should Beat.Make expose input bpm_s ?
-* make example where (several?) rhythms are defined manually 
+  * idea; should enable creation of a 'global envelope' that morphs between envelopes (constructive inte* (ongoing) make example where (several?) rhythms are defined manually 
   * with 
     * 't'/'f' aliases for true/false 
       * this way rhythms can be visualized relative to eachother in code 
@@ -25,6 +14,17 @@
   * if several rhythms; 
     * make them trigger their own part of the screen with notty
       * .. several rhythms are hard to understand with printlines alone
+rference?)
+  * note that input rhythm-note is syncd with *attack* of env
+* @idea; allow user to specify that beat should have limited lifetime?
+  * or let user control lifetime themselves, by calling a 'stop' proc?
+  * lifetimes can be:
+    * amount of events shot 
+    * timeout
+    * till some given thread resolves
+* Beat.Make has an 'e' and 's' - but divide speed operates only on 'e'
+  * should Beat.Make include a function to derive full modules with divided speed?
+  * should Beat.Make expose input bpm_s ?
 * come up with more ways of laying out beats in a simple way, 
   * and then mapping them to a more complex rhythmic structure
     * < check out 'bottom tsh' language for inspiration
@@ -32,6 +32,8 @@
   * or if it's better to stick to a grid of events
 * ratchet; brainstorm on if it could be wanted to trigger a short sequence of 
   events that are not later overruled by next event in baseline event-seq
+  * is this maybe just explicit usage of E.switch?
+    * try to make an example with this usecase
 * make example where a specific rhythm is sped up dynamically (e.g. by an integer multiplier), 
   * but other rhythms are not
 * should Beat's be able to be synchronized somehow?
@@ -48,8 +50,6 @@
       * < @idea; maybe this becomes own example 
 * make example that uses notty for both rhythm modification + colored screen output
   * make sure that `fry` lib doesn't end up depending on notty this way - guess not
-* make `fry` not depend on lwt.unix - Fry.Beat.Make should get passed a sleep proc
-  * possibly make a specialized version of `fry` that depends on lwt.unix?
 * guarantee the timing of events in Fry.Beat.Make relative to start-time
   * < will e.g. allow synchronization with other music
 * make Beat.Make useable for dynamic creation, 
