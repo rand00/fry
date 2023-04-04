@@ -12,6 +12,12 @@ module T = struct
 end
 include T
 
+let with_context ~tick ~len_rhythm note = {
+  note;
+  rhythm_index = tick / len_rhythm;
+  note_index = tick mod len_rhythm;
+}
+
 let rotate_left ~n l =
   let n = n mod CCList.length l in
   let l, l' = CCList.take_drop n l in
@@ -72,18 +78,18 @@ module Option = struct
 
   type 'a t = 'a option T.t
   
-  let get ~tick rhythm =
-    CCList.nth_opt rhythm (tick mod (List.length rhythm))
+  let get_aux ~tick ~len_rhythm rhythm =
+    CCList.nth_opt rhythm (tick mod len_rhythm)
     |> CCOption.flatten
 
-  let get_with_ctx ~tick rhythm =
-    get ~tick rhythm |> CCOption.map (fun note ->
-      let len_rhythm = List.length rhythm in
-      {
-        note;
-        rhythm_index = tick / len_rhythm;
-        note_index = tick mod len_rhythm;
-      }
+  let get ~tick rhythm =
+    let len_rhythm = List.length rhythm in
+    get_aux ~tick ~len_rhythm rhythm
+
+  let get_with_context ~tick rhythm =
+    let len_rhythm = List.length rhythm in
+    get_aux ~tick ~len_rhythm rhythm |> CCOption.map (fun note ->
+      with_context ~tick ~len_rhythm note
     )
   
   let is_on ~tick rhythm = get ~tick rhythm |> Option.is_some
