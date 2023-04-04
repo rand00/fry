@@ -51,6 +51,8 @@ let rhythm_02 =
     | _ -> { delay = None; ratchet = false }
   )
 
+(*> Note that this function returns dynamically created events which
+    are passed to `Fry.Event.limit`*)
 let choose_ratchet v =
   let stamp_note e =
     e |> E.map (fun _ -> 
@@ -58,6 +60,7 @@ let choose_ratchet v =
     )
   in
   if not v.note.ratchet then None else (
+    (*> Note the use of the Fry.Rhythm.context, which contains rhythm_index*)
     if v.rhythm_index mod 2 = 0 then
       let ratchet_e =
         Fast_beat.e |> Fry.Event.limit 4 |> stamp_note
@@ -70,9 +73,10 @@ let choose_ratchet v =
       Some ratchet_e
   )
 
+(*> Note: A general evaluation function for rhythms of the same type*)
 let eval_rhythm rhythm =
   normal_beat
-  |> E.fmap (fun tick -> Fry.Rhythm.Option.get_with_ctx ~tick rhythm)
+  |> E.fmap (fun tick -> Fry.Rhythm.Option.get_with_context ~tick rhythm)
   |> E.map_s (fun v -> match v.note.delay with
     | None -> Lwt.return v
     | Some d -> let+ () = Lwt_unix.sleep d in v
