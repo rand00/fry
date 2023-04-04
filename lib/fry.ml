@@ -6,6 +6,8 @@ module Beat = Beat
 module Ratchet = Ratchet
 module Rhythm = Rhythm
 module Time = Time
+module Event = Event
+
 
 
 
