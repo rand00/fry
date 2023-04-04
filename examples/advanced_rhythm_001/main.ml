@@ -26,6 +26,8 @@ let normal_beat =
   Fast_beat.e
   |> Fry.Beat.divide_speed ~by:(truncate bpm_mul) 
 
+(*> Note: we use these aliases for true/false to easily visualize the
+    parallel rhythms*)
 let x, o = true, false
 
 let rhythm_01 = [ x; o; o; x; x ]
