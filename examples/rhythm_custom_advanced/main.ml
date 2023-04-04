@@ -1,13 +1,16 @@
 open Lwt_react
 open Lwt.Syntax
 
+open Fry.Rhythm.T
+
 type note = {
   delay : float option;
   ratchet : bool;
   (* colour : unit; *) (*< goto come up with something that makes sense for notty*)
 }
 
-let bpm_mul = 6.
+(*> Note the divisibility of 2; for sync of beats when halving them*)
+let bpm_mul = 2. ** 3. 
 let bpm = 120. *. bpm_mul
 
 module Fast_beat = Fry.Beat.Make(struct
@@ -45,56 +48,43 @@ let rhythm_02 =
     | _ -> { delay = None; ratchet = false }
   )
 
-let eval_rhythm rhythm =
-  let ratchet ~v ~i =
-    if not v.ratchet then None else (
-      (*> goto rather want to refer to barX * noteY
-        > noteY can be saved in note on Bool.mapi
-          < @goto; I think ~i param should be removed then!
-            < @goto; is Fry.Ratchet.choose then relevant anymore?
-              * could it just be E.switch?
-      *)
-      if i mod 2 = 0 then
-        (*> goto brian if this interface is wanted..
-            it depends on event being created here :/
-            .. though it's much simpler than current 'choose' interface
-               .. and it's much more powerful than previous every' 
-        *)
-        let ratchet_e = Fast_beat.e |> Fry.Event.limit 4 in
-        Some ratchet_e
-      else
-        let ratchet_e = half_fast_beat |> Fry.Event.limit 2 in
-        Some ratchet_e
+let choose_ratchet v =
+  let stamp_note e =
+    e |> E.map (fun _ -> 
+      { v with note = { delay = None; ratchet = false }}
     )
   in
-  (* let ratchet ~v ~i = *)
-  (*   if not v.ratchet then None else ( *)
-  (*     if i mod 2 = 0 then *)
-  (*       let f ~v_ratchet ~i_ratchet = *)
-  (*         if i_ratchet < 4 then Some v else None *)
-  (*       in *)
-  (*       Some (Fast_beat.e, f) *)
-  (*     else *)
-  (*       let f ~v_ratchet ~i_ratchet = *)
-  (*         if i_ratchet < 2 then Some v else None *)
-  (*       in *)
-  (*       Some (half_fast_beat, f) *)
-  (*   ) *)
-  (* in *)
+  if not v.note.ratchet then None else (
+    if v.rhythm_index mod 2 = 0 then
+      let ratchet_e =
+        Fast_beat.e |> Fry.Event.limit 4 |> stamp_note
+      in
+      Some ratchet_e
+    else
+      let ratchet_e =
+        half_fast_beat |> Fry.Event.limit 2 |> stamp_note
+      in
+      Some ratchet_e
+  )
+
+let eval_rhythm rhythm =
   normal_beat
-  (*goto add rhythm-bar-index here with a new helper - can be used in ratchet-choice*)
-  |> E.fmap (fun tick -> Fry.Rhythm.Option.get ~tick rhythm)
-  |> E.map_s (fun v -> match v.delay with
+  |> E.fmap (fun tick -> Fry.Rhythm.Option.get_with_ctx ~tick rhythm)
+  |> E.map_s (fun v -> match v.note.delay with
     | None -> Lwt.return v
     | Some d -> let+ () = Lwt_unix.sleep d in v
   )
-  |> Fry.Ratchet.choose ~f:ratchet
+  |> Fry.Ratchet.choose choose_ratchet
 
 let rhythm_01_e = eval_rhythm rhythm_01
 let rhythm_02_e = eval_rhythm rhythm_02
 
 let _out =
-  rhythm_01_e |> E.trace (fun _ -> Printf.printf "rhythm_01 note\n%!") |> E.keep;
-  rhythm_02_e |> E.trace (fun _ -> Printf.printf "rhythm_02 note\n%!") |> E.keep
+  rhythm_01_e |> E.trace (fun v ->
+    Printf.printf "rhythm_01 note-index: %d\n%!" v.note_index
+  ) |> E.keep;
+  rhythm_02_e |> E.trace (fun v ->
+    Printf.printf "rhythm_02 note-index: %d\n%!" v.note_index
+  ) |> E.keep
 
 let () = Lwt_main.run @@ Fast_beat.run ()
