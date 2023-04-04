@@ -48,6 +48,12 @@ let rhythm_02 =
 let eval_rhythm rhythm =
   let ratchet ~v ~i =
     if not v.ratchet then None else (
+      (*> goto rather want to refer to barX * noteY
+        > noteY can be saved in note on Bool.mapi
+          < @goto; I think ~i param should be removed then!
+            < @goto; is Fry.Ratchet.choose then relevant anymore?
+              * could it just be E.switch?
+      *)
       if i mod 2 = 0 then
         (*> goto brian if this interface is wanted..
             it depends on event being created here :/
@@ -76,6 +82,7 @@ let eval_rhythm rhythm =
   (*   ) *)
   (* in *)
   normal_beat
+  (*goto add rhythm-bar-index here with a new helper - can be used in ratchet-choice*)
   |> E.fmap (fun tick -> Fry.Rhythm.Option.get ~tick rhythm)
   |> E.map_s (fun v -> match v.delay with
     | None -> Lwt.return v
