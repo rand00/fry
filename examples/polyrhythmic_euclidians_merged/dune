@@ -7,6 +7,7 @@
  (libraries
   fry
   lwt
+  lwt.unix
   lwt_react
   )
  )

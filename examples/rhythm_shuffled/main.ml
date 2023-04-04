@@ -4,8 +4,9 @@ open Lwt.Syntax
 let bpm = 120. 
 
 module Beat = Fry.Beat.Make(struct
-    let bpm_s = S.const bpm
-  end)
+  let bpm_s = S.const bpm
+  let sleep = Lwt_unix.sleep
+end)
 
 let rhythm = 
   [ false; false; false; true; true; true ] 

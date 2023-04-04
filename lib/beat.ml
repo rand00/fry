@@ -3,6 +3,7 @@ open Lwt.Infix
 
 module type PARAM = sig
   val bpm_s : float S.t
+  val sleep : float -> unit Lwt.t
 end
 
 module Make (P : PARAM) = struct 
@@ -13,7 +14,7 @@ module Make (P : PARAM) = struct
 
   let run () =
     let rec aux tick = 
-      Lwt_unix.sleep @@ 60. /. S.value P.bpm_s >>= fun () ->
+      P.sleep @@ 60. /. S.value P.bpm_s >>= fun () ->
       tick_eupd tick;
       aux @@ succ tick
     in

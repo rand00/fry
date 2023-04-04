@@ -1,8 +1,9 @@
 open Lwt_react
 
 module Fast_beat = Fry.Beat.Make(struct
-    let bpm_s = S.const (120. *. 6.)
-  end)
+  let bpm_s = S.const (120. *. 6.)
+  let sleep = Lwt_unix.sleep
+end)
 
 let beat_e = Fast_beat.e |> Fry.Beat.divide_speed ~by:6
 

@@ -1,8 +1,9 @@
 open Lwt_react
 
 module Beat = Fry.Beat.Make(struct
-    let bpm_s = S.const (120. *. 3.)
-  end)
+  let bpm_s = S.const (120. *. 3.)
+  let sleep = Lwt_unix.sleep
+end)
 
 let div, slide = 3, 2
 

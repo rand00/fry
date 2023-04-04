@@ -6,16 +6,9 @@
          ))
  (libraries
   lwt
-  lwt.unix
   lwt_react
   containers
   )
-;; (preprocess
-;;   (pps
-;;     ppx_deriving.std
-;;     ppx_deriving_yojson
-;;   )
-;; )
  )
 
 

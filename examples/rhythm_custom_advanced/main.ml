@@ -14,8 +14,9 @@ let bpm_mul = 2. ** 3.
 let bpm = 120. *. bpm_mul
 
 module Fast_beat = Fry.Beat.Make(struct
-    let bpm_s = S.const bpm
-  end)
+  let bpm_s = S.const bpm
+  let sleep = Lwt_unix.sleep
+end)
 
 let half_fast_beat =
   Fast_beat.e
