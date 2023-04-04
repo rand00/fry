@@ -1,5 +1,19 @@
 # Roadmap / feature-ideas 
 
+* @idea; make a Fry.Envelope module that has helpers for creating high-fps signals defining envelopes
+  * being given arbitrary functions (including prebuilt ones) to define the envelopes 
+  * speed being defined by an fps rate 
+  * idea; should enable creation of a 'global envelope' that morphs between envelopes (constructive interference?)
+  * note that input rhythm-note is syncd with *attack* of env
+* @idea; allow user to specify that beat should have limited lifetime?
+  * or let user control lifetime themselves, by calling a 'stop' proc?
+  * lifetimes can be:
+    * amount of events shot 
+    * timeout
+    * till some given thread resolves
+* Beat.Make has an 'e' and 's' - but divide speed operates only on 'e'
+  * should Beat.Make include a function to derive full modules with divided speed?
+  * should Beat.Make expose input bpm_s ?
 * make example where (several?) rhythms are defined manually 
   * with 
     * 't'/'f' aliases for true/false 
