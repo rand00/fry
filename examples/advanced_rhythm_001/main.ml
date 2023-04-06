@@ -54,9 +54,6 @@ let rhythm_02 =
 (*> Note that this function returns dynamically created events which
     are passed to `Fry.Event.limit`*)
 let choose_ratchet v =
-  (*> goto try stamping with `Ratchet + make Fry.Event.stamp helper?
-    .. actually also makes sense for printing (even thoug we stop that now)
-  *)
   let stamp_note e =
     E.stamp e { v with note = { delay = None; ratchet = false }}
   in
