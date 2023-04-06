@@ -3,7 +3,9 @@
 * @idea; make a Fry.Envelope module that has helpers for creating high-fps signals defining envelopes
   * being given arbitrary functions (including prebuilt ones) to define the envelopes 
   * speed being defined by an fps rate 
-  * idea; should enable creation of a 'global envelope' that morphs between envelopes (constructive inte* (ongoing) make example where (several?) rhythms are defined manually 
+  * idea; should enable creation of a 'global envelope' that morphs between envelopes 
+    (constructive inteference)
+(ongoing) make example where (several?) rhythms are defined manually 
   * with 
     * 't'/'f' aliases for true/false 
       * this way rhythms can be visualized relative to eachother in code 
