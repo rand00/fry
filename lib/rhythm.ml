@@ -5,6 +5,7 @@ module T = struct
 
   type 'a context = {
     note : 'a;
+    tick : int; (*< Note: duplicate information, but useful*)
     rhythm_index : int;
     note_index : int;
   }
@@ -14,6 +15,7 @@ include T
 
 let with_context ~tick ~len_rhythm note = {
   note;
+  tick;
   rhythm_index = tick / len_rhythm;
   note_index = tick mod len_rhythm;
 }
