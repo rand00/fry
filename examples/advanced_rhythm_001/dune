@@ -6,9 +6,11 @@
          ))
  (libraries
   fry
+  fry_io
   lwt
   lwt.unix
   lwt_react
   notty.lwt
+  gg
   )
  )

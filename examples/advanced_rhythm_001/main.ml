@@ -27,7 +27,7 @@ let normal_beat =
   |> Fry.Beat.divide_speed ~by:(truncate bpm_mul) 
 
 (*> Note: we use these aliases for true/false to easily visualize the
-    parallel rhythms*)
+    parallel rhythms in OCaml syntax*)
 let x, o = true, false
 
 let rhythm_01 = [ x; o; o; x; x ]
@@ -54,10 +54,11 @@ let rhythm_02 =
 (*> Note that this function returns dynamically created events which
     are passed to `Fry.Event.limit`*)
 let choose_ratchet v =
+  (*> goto try stamping with `Ratchet + make Fry.Event.stamp helper?
+    .. actually also makes sense for printing (even thoug we stop that now)
+  *)
   let stamp_note e =
-    e |> E.map (fun _ -> 
-      { v with note = { delay = None; ratchet = false }}
-    )
+    E.stamp e { v with note = { delay = None; ratchet = false }}
   in
   if not v.note.ratchet then None else (
     (*> Note the use of the Fry.Rhythm.context, which contains rhythm_index*)
@@ -86,12 +87,70 @@ let eval_rhythm rhythm =
 let rhythm_01_e = eval_rhythm rhythm_01
 let rhythm_02_e = eval_rhythm rhythm_02
 
-let _out =
-  rhythm_01_e |> E.trace (fun v ->
-    Printf.printf "rhythm_01 note-index: %d\n%!" v.note_index
-  ) |> E.keep;
-  rhythm_02_e |> E.trace (fun v ->
-    Printf.printf "rhythm_02 note-index: %d\n%!" v.note_index
-  ) |> E.keep
+let render_fps = 30.
 
-let () = Lwt_main.run @@ Fast_beat.run ()
+(*> Note: This is used for defining envelopes and rendering*)
+module Tick = Fry.Beat.Make(struct
+  let bpm_s = S.const (render_fps *. 60. (*secs*))
+  let sleep = Lwt_unix.sleep
+end)
+
+let secs = 0.2
+
+let envelope_01_s =
+  rhythm_01_e |> Fry.Envelope.create ~tick_e:Tick.e
+    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs)
+
+let envelope_02_s =
+  rhythm_02_e |> Fry.Envelope.create ~tick_e:Tick.e
+    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs)
+
+module Out = struct
+
+  let dimensions_s = Fry_io.Term.sample_dimensions ~at:Tick.e
+
+  open Notty
+  open Gg
+
+  let color_of_env ~high:(r, g, b) ~low:(r', g', b') env =
+    let x0, x1 = 0., 1. in
+    let r = Float.remap ~x0 ~x1 ~y0:(float r') ~y1:(float r) env |> Float.to_int in
+    let g = Float.remap ~x0 ~x1 ~y0:(float g') ~y1:(float g) env |> Float.to_int in
+    let b = Float.remap ~x0 ~x1 ~y0:(float b') ~y1:(float b) env |> Float.to_int in
+    A.rgb_888 ~r ~g ~b
+  
+  let box ~w ~h ~high ~low env =
+    let bg_line =
+      String.make w ' '
+      |> I.string A.(bg @@ color_of_env ~high ~low env)
+    in
+    List.init h (fun _ -> bg_line)
+    |> I.vcat
+  
+  let image_e =
+    S.l3 ~eq:Fry.Eq.never Fry.Tuple.mk3
+      dimensions_s
+      envelope_01_s
+      envelope_02_s
+    |> S.map ~eq:Fry.Eq.never (fun ((w, h), env_01, env_02) ->
+      Printf.printf
+        "image defined from w = %d, h = %d, \
+         env_01 = %.2f, env_02 = %.2f\n%!"
+        w h env_01 env_02;
+      let low = 31, 33, 46 in
+      let high = 77, 83, 117 in 
+      let box = box ~h ~high ~low in
+      I.(box ~w:(w/2) env_01 <|> box ~w:(w/2) env_02)
+    )
+    |> S.changes
+
+  let _out = Fry_io.Term.render image_e
+  
+end
+
+let () =
+  Fry_io.Term.init ();
+  Lwt_main.run @@ Lwt.pick [
+    Fast_beat.run ();
+    Tick.run ();
+  ]
