@@ -31,6 +31,19 @@ let create ~tick_e ~f e =
   |> E.map (fun (_, env, _) -> env)
 
 let sine ~fps ~secs ~i ~v =
-  let i = Float.pi *. 2. *. secs *. float i /. fps in
-  (1. +. sin (i -. Float.pi /. 2.)) /. 2.
+  let i_f = float i in
+  let i_pct = i_f /. (secs *. fps) in
+  if i_pct >= 1. then 0. else 
+    let angle = i_pct *. Float.pi *. 2. in
+    (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
 
+(*> goto brian on best interfaces for these
+  * create usage examples
+    * including both at the same time
+      * possibly there can be a 'cut ~attack ~decay'
+*)
+let cut_attack ~f ~fps ~secs ~i ~v =
+  failwith "todo"
+
+let cut_decay ~f ~fps ~secs ~i ~v =
+  failwith "todo"
