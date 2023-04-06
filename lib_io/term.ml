@@ -1,8 +1,13 @@
 open Lwt_react
 open Gg
 
-let (term_s : Notty_lwt.Term.t option S.t), term_supd =
+(*goto rename, to what?*)
+module Term = Notty_lwt.Term 
+
+let (term_s : Term.t option S.t), term_supd =
   S.create ~eq:Fry.Eq.never None
+
+(*> goto put the input/output helpers in separate scopes?*)
 
 let events_e =
   term_s
@@ -42,4 +47,28 @@ let keys_e =
     | _ -> None
   )
 
+(*goto make a Sample module initiated with tick_e?*)
+let sample_dimensions ~at =
+  let init = 0, 0 in
+  let aux _ term = Option.map Term.size term in
+  S.sample aux at term_s
+  |> E.map (function
+    | None -> init
+    | Some v -> v
+  )
+  |> S.hold init
+
+let render image_e =
+  let output_image (image, term) =
+    match term with
+    | None -> Lwt.return_unit
+    | Some term -> Term.image term image
+  in
+  S.sample (fun v v' -> v, v') image_e term_s
+  |> E.map_s output_image
+
+let init () =
+  let term = Term.create ~nosig:false () in
+  Lwt_main.at_exit (fun () -> Term.release term);
+  term_supd @@ Some term
 
