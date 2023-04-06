@@ -29,6 +29,7 @@ let create ~tick_e ~f e =
       i, env, env_i
   ) (-1, 0., -1)
   |> E.map (fun (_, env, _) -> env)
+  |> S.hold ~eq:CCFloat.equal 0.
 
 let sine ~fps ~secs ~i ~v =
   let i_f = float i in
