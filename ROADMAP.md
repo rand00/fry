@@ -1,23 +1,7 @@
 # Roadmap / feature-ideas 
 
-* @idea; make a Fry.Envelope module that has helpers for creating high-fps signals defining envelopes
-  * being given arbitrary functions (including prebuilt ones) to define the envelopes 
-  * speed being defined by an fps rate 
-  * idea; should enable creation of a 'global envelope' that morphs between envelopes 
-    (constructive inteference)
-(ongoing) make example where (several?) rhythms are defined manually 
-  * with 
-    * 't'/'f' aliases for true/false 
-      * this way rhythms can be visualized relative to eachother in code 
-    * Bool.mapi for configuring each beat with spec for:
-      * delay
-      * ratchet
-      * how to modulate output (e.g. colour)
-  * if several rhythms; 
-    * make them trigger their own part of the screen with notty
-      * .. several rhythms are hard to understand with printlines alone
-rference?)
-  * note that input rhythm-note is syncd with *attack* of env
+* idea for Envelope; should enable creation of a 'global envelope' that morphs between envelopes 
+  (constructive inteference)
 * @idea; allow user to specify that beat should have limited lifetime?
   * or let user control lifetime themselves, by calling a 'stop' proc?
   * lifetimes can be:
@@ -50,8 +34,7 @@ rference?)
       * let one rhythm change the bpm of another with envelope 
         * .. i.e. effect rolling off over time, after note has shot
       * < @idea; maybe this becomes own example 
-* make example that uses notty for both rhythm modification + colored screen output
-  * make sure that `fry` lib doesn't end up depending on notty this way - guess not
+* make example that uses notty for complex interactive rhythmic modification/creation
 * guarantee the timing of events in Fry.Beat.Make relative to start-time
   * < will e.g. allow synchronization with other music
 * make Beat.Make useable for dynamic creation, 
@@ -62,4 +45,4 @@ rference?)
     * @idea; there could also be a 'stop ~when' where 'when' specifies a timeout for GC
   * I guess there should also be a module type so one can create it as a first-class module
     * try out if a 'make'-function makes more sense syntactically 
-* create example with dynamically modified and created rhythms
+
