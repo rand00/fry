@@ -31,7 +31,7 @@ let normal_beat =
 let x, o = true, false
 
 let rhythm_01 = [ x; o; o; x; x ]
-let rhythm_02 = [ x; o; x; o; x ]
+let rhythm_02 = [ x; o; x; o; x; o ]
 
 let rhythm_01 =
   rhythm_01 |> Fry.Rhythm.Bool.mapi (function
@@ -89,34 +89,36 @@ let rhythm_02_e = eval_rhythm rhythm_02
 
 let render_fps = 30.
 
-(*> Note: This is used for defining envelopes and rendering*)
-module Tick = Fry.Beat.Make(struct
+(*> Note: This is for defining envelopes over the rhythms*)
+module Render_tick = Fry.Beat.Make(struct
   let bpm_s = S.const (render_fps *. 60. (*secs*))
   let sleep = Lwt_unix.sleep
 end)
 
-let secs = 0.2
+let env_duration = 0.2
 
+(*> Note: For each rhythmic beat, a smooth envelope is created*)
 let envelope_01_s =
-  rhythm_01_e |> Fry.Envelope.create ~tick_e:Tick.e
-    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs)
+  rhythm_01_e |> Fry.Envelope.create ~tick_e:Render_tick.e
+    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs:env_duration)
 
 let envelope_02_s =
-  rhythm_02_e |> Fry.Envelope.create ~tick_e:Tick.e
-    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs)
+  rhythm_02_e |> Fry.Envelope.create ~tick_e:Render_tick.e
+    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs:env_duration)
 
+(*> Note: Here we define an animated CLI output for the rhythms*)
 module Out = struct
 
-  let dimensions_s = Fry_io.Term.sample_dimensions ~at:Tick.e
+  let dimensions_s = Fry_io.Term.sample_dimensions ~at:Render_tick.e
 
   open Notty
   open Gg
 
   let color_of_env ~high:(r, g, b) ~low:(r', g', b') env =
-    let x0, x1 = 0., 1. in
-    let r = Float.remap ~x0 ~x1 ~y0:(float r') ~y1:(float r) env |> Float.to_int in
-    let g = Float.remap ~x0 ~x1 ~y0:(float g') ~y1:(float g) env |> Float.to_int in
-    let b = Float.remap ~x0 ~x1 ~y0:(float b') ~y1:(float b) env |> Float.to_int in
+    let remap = Float.remap ~x0:0. ~x1:1. in
+    let r = remap ~y0:(float r') ~y1:(float r) env |> Float.to_int in
+    let g = remap ~y0:(float g') ~y1:(float g) env |> Float.to_int in
+    let b = remap ~y0:(float b') ~y1:(float b) env |> Float.to_int in
     A.rgb_888 ~r ~g ~b
   
   let box ~w ~h ~high ~low env =
@@ -133,10 +135,6 @@ module Out = struct
       envelope_01_s
       envelope_02_s
     |> S.map ~eq:Fry.Eq.never (fun ((w, h), env_01, env_02) ->
-      Printf.printf
-        "image defined from w = %d, h = %d, \
-         env_01 = %.2f, env_02 = %.2f\n%!"
-        w h env_01 env_02;
       let low = 31, 33, 46 in
       let high = 77, 83, 117 in 
       let box = box ~h ~high ~low in
@@ -152,5 +150,5 @@ let () =
   Fry_io.Term.init ();
   Lwt_main.run @@ Lwt.pick [
     Fast_beat.run ();
-    Tick.run ();
+    Render_tick.run ();
   ]
