@@ -47,7 +47,7 @@ Install dependencies for `fry` and for running the examples:
 ```bash
 opam install lwt lwt_react containers gg notty
 ```
-..note that the `fry` library by itself only depends on `lwt lwt_react containers`,
+..note that the `fry` library by itself only depends on `lwt`, `lwt_react` and `containers`,
 so it's compatible with e.g. MirageOS.
 
 Compile examples and the library:
