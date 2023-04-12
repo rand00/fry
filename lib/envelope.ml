@@ -31,20 +31,34 @@ let create ~tick_e ~f e =
   |> E.map (fun (_, env, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
 
-let sine ~fps ~secs ~i ~v =
+let sine ~length ~i ~v =
   let i_f = float i in
-  let i_pct = i_f /. (secs *. fps) in
+  let i_pct = i_f /. length in
   if i_pct >= 1. then 0. else 
     let angle = i_pct *. Float.pi *. 2. in
     (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
 
-(*> goto brian on best interfaces for these
-  * create usage examples
-    * including both at the same time
-      * possibly there can be a 'cut ~attack ~decay'
-*)
-let cut_attack ~f ~fps ~secs ~i ~v =
-  failwith "todo"
+let cut_attack length f ~i ~v =
+  f ~i:(truncate length + i) ~v
 
-let cut_decay ~f ~fps ~secs ~i ~v =
-  failwith "todo"
+let cut_decay length f ~i ~v =
+  let i = if i >= truncate length then Int.max_int else i in
+  f ~i ~v
+
+let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
+
+let add f g = apply (+.) f g
+let mul f g = apply ( *. ) f g
+let max f g = apply Float.max f g
+let min f g = apply Float.min f g
+
+let pure x ~i ~v = x
+
+let cmul c f = mul f @@ pure c
+let cmin c f = min f @@ pure c
+
+let normalize_on_i ~length ~v_static f =
+  let vs = List.init (truncate length) (fun i -> f ~i ~v:v_static) in
+  let max_v = List.fold_left Float.max Float.min_float vs in
+  fun ~i ~v -> 
+    f ~i ~v /. max_v

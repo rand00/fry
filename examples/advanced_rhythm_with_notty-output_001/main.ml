@@ -93,15 +93,16 @@ module Render_tick = Fry.Beat.Make(struct
 end)
 
 let env_duration = 0.2
+let env_length = env_duration *. render_fps
 
 (*> Note: For each rhythmic beat, a smooth envelope is created*)
 let envelope_01_s =
   rhythm_01_e |> Fry.Envelope.create ~tick_e:Render_tick.e
-    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs:env_duration)
+    ~f:(Fry.Envelope.sine ~length:env_length)
 
 let envelope_02_s =
   rhythm_02_e |> Fry.Envelope.create ~tick_e:Render_tick.e
-    ~f:(Fry.Envelope.sine ~fps:render_fps ~secs:env_duration)
+    ~f:(Fry.Envelope.sine ~length:env_length)
 
 (*> Note: Here we define an animated CLI output for the rhythms*)
 module Out = struct
