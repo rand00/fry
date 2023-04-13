@@ -52,52 +52,44 @@ let mul f g = apply ( *. ) f g
 let max f g = apply Float.max f g
 let min f g = apply Float.min f g
 
+let sum fs ~i ~v =
+  List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
+
 let pure x ~i ~v = x
 
 let cmul c f = mul f @@ pure c
 let cmin c f = min f @@ pure c
 
+(** Note that this depends on 'f' being pure*)
 let normalize_on_i ~length ~v_static f =
   let vs = List.init (truncate length) (fun i -> f ~i ~v:v_static) in
   let max_v = List.fold_left Float.max Float.min_float vs in
   fun ~i ~v -> 
     f ~i ~v /. max_v
 
-let adsr ~a ~d ~s ~r =
-  let interp i v2 v2' =
-    let min_x = fst v2 in
-    let max_x = fst v2' in
-    let diff_x = max_x -. min_x in
-    let i_pct = (i -. min_x) /. diff_x in
+let point_list l ~i ~v =
+  (*> Note: depends on i being in between v2.x and v2'.x*)
+  let interp_aux i v2 v2' =
+    let diff_x = fst v2' -. fst v2 in
     let diff_y = snd v2' -. snd v2 in
+    let i_pct = (i -. fst v2) /. diff_x in
     let y_rel = i_pct *. diff_y in
     snd v2 +. y_rel
   in
-  fun ~i ~v ->
-    let i = float i in
-    let x_a = fst a in
-    if i < x_a then
-      interp i (0.,0.) a
-    else (
-      let x_ad = x_a +. fst d in
-      let ad = x_ad, snd d in
-      if i < x_ad then
-        interp i a ad
-      else (
-        let x_ads = x_ad +. fst s in
-        let ads = x_ads, snd s in
-        if i < x_ads then
-          interp i ad ads
-        else (
-          let x_adsr = x_ads +. fst r in
-          let adsr = x_adsr, snd r in
-          if i < x_adsr then
-            interp i ads adsr
-          else
-            0.
-        )
-      )
-    )
+  let i = float i in
+  let rec aux ~vec_prev = function
+    | [] -> 0.
+    | vec_rel :: rest -> 
+      let x = fst vec_prev +. fst vec_rel in
+      let vec_abs = x, snd vec_rel in
+      if i <= x then
+        interp_aux i vec_prev vec_abs
+      else
+        aux ~vec_prev:vec_abs rest
+  in
+  aux ~vec_prev:(0., 0.) l
+
+let adsr ~a ~d ~s ~r = [ a; d; s; r ] |> point_list
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
