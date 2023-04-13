@@ -62,3 +62,47 @@ let normalize_on_i ~length ~v_static f =
   let max_v = List.fold_left Float.max Float.min_float vs in
   fun ~i ~v -> 
     f ~i ~v /. max_v
+
+let adsr ~a ~d ~s ~r =
+  let interp i v2 v2' =
+    let min_x = fst v2 in
+    let max_x = fst v2' in
+    let diff_x = max_x -. min_x in
+    let i_pct = (i -. min_x) /. diff_x in
+    let diff_y = snd v2' -. snd v2 in
+    let y_rel = i_pct *. diff_y in
+    snd v2 +. y_rel
+  in
+  fun ~i ~v ->
+    let i = float i in
+    let x_a = fst a in
+    if i < x_a then
+      interp i (0.,0.) a
+    else (
+      let x_ad = x_a +. fst d in
+      let ad = x_ad, snd d in
+      if i < x_ad then
+        interp i a ad
+      else (
+        let x_ads = x_ad +. fst s in
+        let ads = x_ads, snd s in
+        if i < x_ads then
+          interp i ad ads
+        else (
+          let x_adsr = x_ads +. fst r in
+          let adsr = x_adsr, snd r in
+          if i < x_adsr then
+            interp i ads adsr
+          else
+            0.
+        )
+      )
+    )
+
+let trace tag f ~i ~v =
+  let r = f ~i ~v in
+  Printf.eprintf "envelope: i = %d, %s = %.2f%!\n" i tag r;
+  r
+
+
+
