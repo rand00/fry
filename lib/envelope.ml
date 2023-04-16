@@ -82,7 +82,7 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
       fun ~i ~v -> (f ~i ~v -. min_v) /. range_v
   )
 
-let point_list l ~i ~v =
+let points l ~i ~v =
   (*> Note: depends on i being in between v2.x and v2'.x*)
   let interp_aux i v2 v2' =
     let diff_x = fst v2' -. fst v2 in
@@ -104,7 +104,7 @@ let point_list l ~i ~v =
   in
   aux ~vec_prev:(0., 0.) l
 
-let adsr a d s r = [ a; d; s; r ] |> point_list
+let adsr a d s r = [ a; d; s; r ] |> points
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
