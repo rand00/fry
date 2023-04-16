@@ -85,23 +85,23 @@ module Out = struct
     A.rgb_888 ~r ~g ~b
   
   let box ~w ~h ~high ~low env =
-    let bg_line =
+    let row =
       String.make w ' '
       |> I.string A.(bg @@ color_of_env ~high ~low env)
     in
-    List.init h (fun _ -> bg_line)
+    List.init h (fun _ -> row)
     |> I.vcat
 
   let line ~w ~h env =
     let y_max = float h *. env |> truncate in
-    let bg_line y =
+    let row y =
       let is_on = y < y_max in
       String.init w (fun x -> 
         if x = w/2 && is_on then '|' else ' '
       )
       |> I.string A.empty
     in
-    List.init h bg_line
+    List.init h row
     |> I.vcat
 
   let envelopes ?(typ=`Line) ~tick_e envelopes =
