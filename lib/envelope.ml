@@ -31,11 +31,13 @@ let create ~tick_e ~f e =
   |> E.map (fun (_, env, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
 
-(*goto add infinite / repeating waveforms too -
-  useful for e.g. multiplying/adding with finite ones
-  * maybe put in Inf submodule?
-    * @idea; also add 'Inf.of_finite env'
-*)
+module Inf = struct
+
+  let of_finite ~length f ~i ~v =
+    let i = i mod length in
+    f ~i ~v
+
+end
 
 let sine ~length ~i ~v =
   let i_f = float i in
