@@ -2,7 +2,7 @@ open Lwt_react
 open Lwt.Syntax
 open Fry.Rhythm.T
 
-let bpm = 30.
+let bpm = 40.
 
 module Beat = Fry.Beat.Make(struct
   let bpm_s = S.const bpm
@@ -18,23 +18,19 @@ end)
 
 (*> Note: Here we compose different envelopes to make a more complex one*)
 let envelope =
-  let open Fry.Envelope in
-  let duration = (Fry.Time.of_bpm bpm) /. 1.0 in
+  let duration = Fry.Time.of_bpm bpm /. 1.5 in
   let length = duration *. render_fps in
-  sum [
-    sine ~length;
-    (* ( *)
-    (*   let length = length /. 5. in *)
-    (*   Inf.of_finite ~length (sine ~length) *)
-    (*   |> cmul 0.3 *)
-    (* ); *)
-    (* ( *)
-    (*   let x = length /. 4. in *)
-    (*   adsr (x*.2., 0.8) (x/.2., 1.) (x/.2., 0.8) (x*.2., 0.) *)
-    (* ); *)
-  ]
-  |> normalize_on_i ~length ~v_static:0
-  |> trace "adsr"
+  Fry.Envelope.(
+    mul
+      (sine ~length)
+      (
+        let length = length /. 3. in
+        Inf.of_finite ~length (sine ~length)
+        |> cmul 0.5
+        |> phase ~length ~shift:(length /. 1.9)
+      )
+    |> normalize_on_i ~length ~v_static:0
+  )
 
 (*goto try making a dynamic envelope wrapper that has pure env branches
   .. which can therefore be normalized individually
@@ -44,7 +40,7 @@ let envelope_s =
   Beat.e |> Fry.Envelope.create ~tick_e:Render_tick.e ~f:envelope
 
 let _out =
-  Fry_io.Term.Out.envelopes ~tick_e:Render_tick.e
+  Fry_io.Term.Out.envelopes ~typ:`Line ~tick_e:Render_tick.e
     [ envelope_s ]
 
 let () =
