@@ -21,7 +21,7 @@ let create ~tick_e ~f e =
 module Inf = struct
 
   let of_finite ~length f ~i ~v =
-    let i = i mod length in
+    let i = i mod truncate length in
     f ~i ~v
 
 end
