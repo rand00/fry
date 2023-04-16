@@ -32,10 +32,6 @@ let envelope =
     |> normalize_on_i ~length ~v_static:0
   )
 
-(*goto try making a dynamic envelope wrapper that has pure env branches
-  .. which can therefore be normalized individually
-    .. and match on `Ratchet vs `Beat for choosing envelope
-*)
 let envelope_s =
   Beat.e |> Fry.Envelope.create ~tick_e:Render_tick.e ~f:envelope
 
