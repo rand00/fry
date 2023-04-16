@@ -48,6 +48,10 @@ let mul f g = apply ( *. ) f g
 let max f g = apply Float.max f g
 let min f g = apply Float.min f g
 
+let phase ~length ~shift f ~i ~v =
+  let i = (i + truncate shift) mod truncate length in
+  f ~i ~v
+
 let sum fs ~i ~v =
   List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
