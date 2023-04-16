@@ -16,7 +16,7 @@ module Render_tick = Fry.Beat.Make(struct
   let sleep = Lwt_unix.sleep
 end)
 
-(*> Note: Here we compose different envelopes to make a more complex one*)
+(*> Note: Here we compose different envelopes to make a complex one*)
 let envelope =
   let duration = Fry.Time.of_bpm bpm /. 1.5 in
   let length = duration *. render_fps in
