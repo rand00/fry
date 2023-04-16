@@ -3,7 +3,8 @@ open Lwt_react
 let sample ~at s =
   s |> S.sample (fun _ v -> v) at
 
-let of_signals : 'a signal list -> 'a list signal = fun signals ->
+let of_signals ?(eq=(=)) : 'a signal list -> 'a list signal = fun signals ->
+  let eq = CCList.equal eq in
   let rec aux = function
     | s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: [] -> (* len = 6 *)
       S.l6 (fun v1 v2 v3 v4 v5 v6 -> v1 :: v2 :: v3 :: v4 :: v5 :: v6 :: [])
