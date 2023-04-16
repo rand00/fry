@@ -1,6 +1,4 @@
 open Lwt_react
-open Lwt.Syntax
-open Fry.Rhythm.T
 
 let bpm = 40.
 
