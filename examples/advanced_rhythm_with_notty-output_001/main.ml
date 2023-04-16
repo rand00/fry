@@ -105,8 +105,9 @@ let envelope_02_s =
     ~f:(Fry.Envelope.sine ~length:env_length)
 
 let _out =
-  Fry_io.Term.Out.envelopes ~typ:`Box ~tick_e:Render_tick.e
-    [ envelope_01_s; envelope_02_s ]
+  Fry_io.Term.Out.envelopes ~typ:`Box
+    [ envelope_01_s;
+      envelope_02_s ]
 
 let () =
   Fry_io.Term.init ();

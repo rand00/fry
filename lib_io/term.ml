@@ -105,11 +105,13 @@ module Out = struct
     List.init h row
     |> I.vcat
 
-  let envelopes ?(typ=`Line) ~tick_e envelopes =
-    let dimensions_s = sample_dimensions ~at:tick_e in
+  let envelopes ?(typ=`Line) envelopes =
+    let envelopes_s = envelopes |> Fry.Signal.of_signals ~eq:CCFloat.equal in
+    let envelopes_e = envelopes_s |> S.changes in
+    let dimensions_s = sample_dimensions ~at:envelopes_e in
     S.l2 ~eq:Fry.Eq.never Fry.Tuple.mk2
       dimensions_s
-      (envelopes |> Fry.Signal.of_signals ~eq:CCFloat.equal)
+      envelopes_s
     |> S.map ~eq:Fry.Eq.never (fun ((w, h), envelopes) ->
       let len = List.length envelopes in
       let w_box = float w /. float len |> truncate in
