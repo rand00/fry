@@ -51,11 +51,11 @@ let max f g = apply Float.max f g
 let min f g = apply Float.min f g
 
 let phase ~length ~shift f ~i ~v =
+  (*> Note: the reason for 'mod length' is that envelopes can be finite*)
   let i = (i + to_int shift) mod to_int length in
   f ~i ~v
 
-let sum fs ~i ~v =
-  List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
+let sum fs ~i ~v = List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let pure x ~i ~v = x
 
