@@ -9,7 +9,7 @@ let rhythm_e =
   let rhythms = Fry.Rhythm.[
     Euclidean.make ~len:5 ~n:4;
     Euclidean.make ~len:5 ~n:3;
-    Euclidean.make ~len:8 ~n:7 |> rotate_left ~n:4;
+    Euclidean.make ~len:8 ~n:7 |> rotate_left 4;
   ]
   in
   Beat.e

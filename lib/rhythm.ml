@@ -20,14 +20,14 @@ let with_context ~tick ~len_rhythm note = {
   note_index = tick mod len_rhythm;
 }
 
-let rotate_left ~n l =
+let rotate_left n l =
   let n = n mod CCList.length l in
   let l, l' = CCList.take_drop n l in
   l' @ l
 
-let rotate_right ~n l =
+let rotate_right n l =
   CCList.rev l
-  |> rotate_left ~n
+  |> rotate_left n
   |> CCList.rev
 
 let shuffle l =
