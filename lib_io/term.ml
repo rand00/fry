@@ -93,14 +93,11 @@ module Out = struct
     |> I.vcat
 
   let line ~w ~h env =
+    let y_max = float h *. env |> truncate in
     let bg_line y =
-      String.make w ' '
-      |> String.mapi (fun x c ->
-        let is_on =
-          let y_max = float h *. env |> truncate in
-          y < y_max
-        in
-        if x = w/2 && is_on then '|' else c
+      let is_on = y < y_max in
+      String.init w (fun x -> 
+        if x = w/2 && is_on then '|' else ' '
       )
       |> I.string A.empty
     in
