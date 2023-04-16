@@ -44,20 +44,17 @@ let sine ~length ~i ~v =
     let angle = i_pct *. Float.pi *. 2. in
     (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
 
-(*goto rename: cut_start*)
-let cut_attack length f ~i ~v =
+let cut_start length f ~i ~v =
   f ~i:(truncate length + i) ~v
 
-(*goto rename: cut_end*)
-let cut_decay length f ~i ~v =
+let cut_end length f ~i ~v =
   let i = if i >= truncate length then Int.max_int else i in
   f ~i ~v
 
 let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
 
-(*goto add subtract (brian if too dangerous without normalization)*)
-
 let add f g = apply (+.) f g
+let sub f g = apply (-.) f g
 let mul f g = apply ( *. ) f g
 let max f g = apply Float.max f g
 let min f g = apply Float.min f g
