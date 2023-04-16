@@ -50,13 +50,14 @@ let keys_e =
 (*goto make a Sample module initiated with tick_e?*)
 let sample_dimensions ~at =
   let init = 0, 0 in
+  let eq = Fry.Tuple.eq2 CCInt.equal CCInt.equal in
   let aux _ term = Option.map Term.size term in
   S.sample aux at term_s
   |> E.map (function
     | None -> init
     | Some v -> v
   )
-  |> S.hold init
+  |> S.hold ~eq init
 
 let render image_e =
   let output_image (image, term) =
