@@ -25,7 +25,8 @@ let envelope =
       (sine ~length)
       (
         let length = length /. 3. in
-        Inf.of_finite ~length (sine ~length)
+        sine ~length
+        |> Inf.of_finite ~length
         |> cmul 0.5
         |> phase ~length ~shift:(length /. 1.9)
       )
