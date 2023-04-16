@@ -22,14 +22,14 @@ let to_int f = f |> Float.round |> Float.to_int
 
 module Inf = struct
 
-  let of_finite ?apply ~length f ~i ~v =
+  let of_finite ?on_repeat ~length f ~i ~v =
     let length = to_int length in
     let i = i mod length in
-    match apply with
+    match on_repeat with
     | None -> f ~i ~v
     | Some g ->
-      let period = i / length in
-      g ~period @@ f ~i ~v
+      let i_repeat = i / length in
+      g ~i_repeat @@ f ~i ~v
 
 end
 
