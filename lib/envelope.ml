@@ -1,18 +1,5 @@
 open Lwt_react
 
-(** Example use*)
-(* let _ = *)
-(*   let fps = 30. in *)
-(*   let envelope ~i ~v =  *)
-(*     (\*> Note: this should go from 0. to 1. to 0., in 1 sec *)
-(*       where i starts at 0 on new input event *)
-(*     *\) *)
-(*     let i = Float.pi *. 2. *. float i /. fps in *)
-(*     (1. +. sin (i -. Float.pi /. 2.)) /. 2. *)
-(*   in *)
-(*   rhythm_e *)
-(*   |> Fry.Envelope.create ~tick_e ~f:envelope *)
-
 let create ~tick_e ~f e =
   let s = 
     e
@@ -70,20 +57,24 @@ let cmul c f = mul f @@ pure c
 let cmin c f = min f @@ pure c
 
 (** Note that this depends on 'f' being pure*)
-let normalize_on_i ~length ~v_static f =
+let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
   let vs = List.init (truncate length) (fun i -> f ~i ~v:v_static) in
   let min_v, max_v = List.fold_left (fun (min_v, max_v) v ->
     Float.min min_v v, Float.max max_v v
   ) (Float.max_float, Float.min_float) vs
   in
   let range_v = max_v -. min_v in
-  fun ~i ~v ->
-    if min_v >= 0. then
-      (*We don't move envelopes that don't hit 0. down*)
-      f ~i ~v /. max_v
-    else
-      (*If envelope is negative, we move it up*)
-      (f ~i ~v -. min_v) /. range_v
+  if min_v >= 0. then
+    (*We don't move envelopes that don't hit 0. down*)
+    fun ~i ~v -> f ~i ~v /. max_v
+  else (
+    if cut_negative then
+      (*For understandable handling of messy envelopes*)
+      fun ~i ~v -> Float.max 0. (f ~i ~v) /. max_v
+    else 
+      (*If envelope is negative, we move envelope up*)
+      fun ~i ~v -> (f ~i ~v -. min_v) /. range_v
+  )
 
 let point_list l ~i ~v =
   (*> Note: depends on i being in between v2.x and v2'.x*)
