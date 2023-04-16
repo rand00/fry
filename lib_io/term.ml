@@ -91,20 +91,40 @@ module Out = struct
     in
     List.init h (fun _ -> bg_line)
     |> I.vcat
-  
-  let envelopes ~tick_e envelopes =
+
+  let line ~w ~h env =
+    let bg_line y =
+      String.make w ' '
+      |> String.mapi (fun x c ->
+        let is_on =
+          let y_max = float h *. env |> truncate in
+          y < y_max
+        in
+        if x = w/2 && is_on then '|' else c
+      )
+      |> I.string A.empty
+    in
+    List.init h bg_line
+    |> I.vcat
+
+  let envelopes ?(typ=`Line) ~tick_e envelopes =
     let dimensions_s = sample_dimensions ~at:tick_e in
     S.l2 ~eq:Fry.Eq.never Fry.Tuple.mk2
       dimensions_s
       (envelopes |> Fry.Signal.of_signals ~eq:CCFloat.equal)
     |> S.map ~eq:Fry.Eq.never (fun ((w, h), envelopes) ->
-      let low = 31, 33, 46 in
-      let high = 77, 83, 117 in 
       let len = List.length envelopes in
       let w_box = float w /. float len |> truncate in
-      let box = box ~w:w_box ~h ~high ~low in
+      let mk_image = match typ with
+        | `Box -> 
+          let low = 31, 33, 46 in
+          let high = 77, 83, 117 in 
+          box ~w:w_box ~h ~high ~low
+        | `Line ->
+          line ~w:w_box ~h
+      in
       envelopes
-      |> List.map box
+      |> List.map mk_image
       |> I.hcat 
     )
     |> S.changes
