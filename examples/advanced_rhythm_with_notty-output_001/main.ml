@@ -104,45 +104,9 @@ let envelope_02_s =
   rhythm_02_e |> Fry.Envelope.create ~tick_e:Render_tick.e
     ~f:(Fry.Envelope.sine ~length:env_length)
 
-(*> Note: Here we define an animated CLI output for the rhythms*)
-module Out = struct
-
-  let dimensions_s = Fry_io.Term.sample_dimensions ~at:Render_tick.e
-
-  open Notty
-  open Gg
-
-  let color_of_env ~high:(r, g, b) ~low:(r', g', b') env =
-    let remap = Float.remap ~x0:0. ~x1:1. in
-    let r = remap ~y0:(float r') ~y1:(float r) env |> Float.to_int in
-    let g = remap ~y0:(float g') ~y1:(float g) env |> Float.to_int in
-    let b = remap ~y0:(float b') ~y1:(float b) env |> Float.to_int in
-    A.rgb_888 ~r ~g ~b
-  
-  let box ~w ~h ~high ~low env =
-    let bg_line =
-      String.make w ' '
-      |> I.string A.(bg @@ color_of_env ~high ~low env)
-    in
-    List.init h (fun _ -> bg_line)
-    |> I.vcat
-  
-  let image_e =
-    S.l3 ~eq:Fry.Eq.never Fry.Tuple.mk3
-      dimensions_s
-      envelope_01_s
-      envelope_02_s
-    |> S.map ~eq:Fry.Eq.never (fun ((w, h), env_01, env_02) ->
-      let low = 31, 33, 46 in
-      let high = 77, 83, 117 in 
-      let box = box ~h ~high ~low in
-      I.(box ~w:(w/2) env_01 <|> box ~w:(w/2) env_02)
-    )
-    |> S.changes
-
-  let _out = Fry_io.Term.render image_e
-  
-end
+let _out =
+  Fry_io.Term.Out.envelopes ~typ:`Box ~tick_e:Render_tick.e
+    [ envelope_01_s; envelope_02_s ]
 
 let () =
   Fry_io.Term.init ();
