@@ -31,6 +31,12 @@ let create ~tick_e ~f e =
   |> E.map (fun (_, env, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
 
+(*goto add infinite / repeating waveforms too -
+  useful for e.g. multiplying/adding with finite ones
+  * maybe put in Inf submodule?
+    * @idea; also add 'Inf.of_finite env'
+*)
+
 let sine ~length ~i ~v =
   let i_f = float i in
   let i_pct = i_f /. length in
@@ -38,14 +44,18 @@ let sine ~length ~i ~v =
     let angle = i_pct *. Float.pi *. 2. in
     (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
 
+(*goto rename: cut_start*)
 let cut_attack length f ~i ~v =
   f ~i:(truncate length + i) ~v
 
+(*goto rename: cut_end*)
 let cut_decay length f ~i ~v =
   let i = if i >= truncate length then Int.max_int else i in
   f ~i ~v
 
 let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
+
+(*goto add subtract (brian if too dangerous without normalization)*)
 
 let add f g = apply (+.) f g
 let mul f g = apply ( *. ) f g
@@ -63,9 +73,18 @@ let cmin c f = min f @@ pure c
 (** Note that this depends on 'f' being pure*)
 let normalize_on_i ~length ~v_static f =
   let vs = List.init (truncate length) (fun i -> f ~i ~v:v_static) in
-  let max_v = List.fold_left Float.max Float.min_float vs in
-  fun ~i ~v -> 
-    f ~i ~v /. max_v
+  let min_v, max_v = List.fold_left (fun (min_v, max_v) v ->
+    Float.min min_v v, Float.max max_v v
+  ) (Float.max_float, Float.min_float) vs
+  in
+  let range_v = max_v -. min_v in
+  fun ~i ~v ->
+    if min_v >= 0. then
+      (*We don't move envelopes that don't hit 0. down*)
+      f ~i ~v /. max_v
+    else
+      (*If envelope is negative, we move it up*)
+      (f ~i ~v -. min_v) /. range_v
 
 let point_list l ~i ~v =
   (*> Note: depends on i being in between v2.x and v2'.x*)
@@ -89,7 +108,7 @@ let point_list l ~i ~v =
   in
   aux ~vec_prev:(0., 0.) l
 
-let adsr ~a ~d ~s ~r = [ a; d; s; r ] |> point_list
+let adsr a d s r = [ a; d; s; r ] |> point_list
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
