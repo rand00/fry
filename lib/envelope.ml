@@ -18,10 +18,12 @@ let create ~tick_e ~f e =
   |> E.map (fun (_, env, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
 
+let to_int f = f |> Float.round |> Float.to_int
+
 module Inf = struct
 
   let of_finite ~length f ~i ~v =
-    let i = i mod truncate length in
+    let i = i mod to_int length in
     f ~i ~v
 
 end
@@ -34,10 +36,10 @@ let sine ~length ~i ~v =
     (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
 
 let cut_start length f ~i ~v =
-  f ~i:(truncate length + i) ~v
+  f ~i:(to_int length + i) ~v
 
 let cut_end length f ~i ~v =
-  let i = if i >= truncate length then Int.max_int else i in
+  let i = if i >= to_int length then Int.max_int else i in
   f ~i ~v
 
 let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
@@ -49,7 +51,7 @@ let max f g = apply Float.max f g
 let min f g = apply Float.min f g
 
 let phase ~length ~shift f ~i ~v =
-  let i = (i + truncate shift) mod truncate length in
+  let i = (i + to_int shift) mod to_int length in
   f ~i ~v
 
 let sum fs ~i ~v =
@@ -62,7 +64,7 @@ let cmin c f = min f @@ pure c
 
 (** Note that this depends on 'f' being pure*)
 let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
-  let vs = List.init (truncate length) (fun i -> f ~i ~v:v_static) in
+  let vs = List.init (to_int length) (fun i -> f ~i ~v:v_static) in
   let min_v, max_v = List.fold_left (fun (min_v, max_v) v ->
     Float.min min_v v, Float.max max_v v
   ) (Float.max_float, Float.min_float) vs
