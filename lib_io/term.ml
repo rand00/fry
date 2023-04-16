@@ -72,3 +72,42 @@ let init () =
   Lwt_main.at_exit (fun () -> Term.release term);
   term_supd @@ Some term
 
+module Out = struct
+
+  open Notty
+  open Gg
+
+  let color_of_env ~high:(r, g, b) ~low:(r', g', b') env =
+    let remap = Float.remap ~x0:0. ~x1:1. in
+    let r = remap ~y0:(float r') ~y1:(float r) env |> Float.to_int in
+    let g = remap ~y0:(float g') ~y1:(float g) env |> Float.to_int in
+    let b = remap ~y0:(float b') ~y1:(float b) env |> Float.to_int in
+    A.rgb_888 ~r ~g ~b
+  
+  let box ~w ~h ~high ~low env =
+    let bg_line =
+      String.make w ' '
+      |> I.string A.(bg @@ color_of_env ~high ~low env)
+    in
+    List.init h (fun _ -> bg_line)
+    |> I.vcat
+  
+  let envelopes ~tick_e envelopes =
+    let dimensions_s = sample_dimensions ~at:tick_e in
+    S.l2 ~eq:Fry.Eq.never Fry.Tuple.mk2
+      dimensions_s
+      (envelopes |> Fry.Signal.of_signals ~eq:CCFloat.equal)
+    |> S.map ~eq:Fry.Eq.never (fun ((w, h), envelopes) ->
+      let low = 31, 33, 46 in
+      let high = 77, 83, 117 in 
+      let len = List.length envelopes in
+      let w_box = float w /. float len |> truncate in
+      let box = box ~w:w_box ~h ~high ~low in
+      envelopes
+      |> List.map box
+      |> I.hcat 
+    )
+    |> S.changes
+    |> render
+
+end
