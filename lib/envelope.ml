@@ -116,5 +116,36 @@ let trace tag f ~i ~v =
   Printf.eprintf "envelope: i = %d, %s = %.2f%!\n" i tag r;
   r
 
+module Trigger = struct
+
+  (*Usage example:*)
+  (* let _ = *)
+  (*   env_s |> Fry.Envelope.Trigger.on 0.8 *)
+  (*   |> E.map (function *)
+  (*     | `Up -> foo *)
+  (*     | `Down -> bar *)
+  (*   ) *)
+
+  let on (trigger_v:float) env_s =
+    let trigger_aux acc v =
+      match acc with
+      | None -> Some (None, v)
+      | Some (_out, last_v) ->
+        if last_v < trigger_v && trigger_v < v then
+          Some (Some `Up, v)
+        else if v < trigger_v && trigger_v < last_v then
+          Some (Some `Down, v)
+        else
+          Some (None, v)
+    in
+    env_s
+    |> S.changes
+    |> E.fold trigger_aux None
+    |> E.fmap (function
+      | None -> None
+      | Some (out, _) -> out
+    )
+  
+end 
 
 
