@@ -29,7 +29,7 @@ module Inf = struct
     | None -> f ~i ~v
     | Some g ->
       let i_repeat = i / length in
-      g ~i_repeat @@ f ~i ~v
+      g ~i_repeat ~i @@ f ~i ~v
 
 end
 
