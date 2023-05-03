@@ -1,6 +1,6 @@
 (library
  (name fry_io)
- ;; (public_name fry.io)
+ (public_name fry.io)
  (flags (:standard
          (-w -27-33-26-9-21-32)
          ))

@@ -21,7 +21,9 @@ let events_e =
 
 let mouse_drag_abs_e =
   events_e |> E.fmap (function
-    | `Mouse (`Drag, (x, y), mods) -> Some ((V2.v (float x) (float y), mods))
+    | `Mouse (`Drag, (x, y), mods) ->
+      Some (`Drag ((V2.v (float x) (float y), mods)))
+    | `Mouse (`Release, _, _) -> Some `Release
     | _ -> None
   )
   (* |> E.trace (fun v2 ->
@@ -29,11 +31,18 @@ let mouse_drag_abs_e =
    * ) *)
 
 let mouse_drag_rel_e =
-  let init = ((V2.zero, []), V2.zero)
+  let init = ((V2.zero, []), None)
   in
   mouse_drag_abs_e
-  |> E.fold (fun (_last_rel, last_abs) (abs, mods) ->
-    (V2.(abs - last_abs), mods), abs
+  |> E.fold (fun (last_rel, last_abs) -> function
+    | `Drag (abs, mods) ->
+      begin match last_abs with
+        | Some last_abs -> 
+          (V2.(abs - last_abs), mods), Some abs
+        | None ->
+          (V2.zero, mods), Some abs
+      end
+    | `Release -> last_rel, None
   ) init
   |> E.map fst
   |> E.map (fun (v2, mods) -> V2.(mul v2 (v 1. (-1.))), mods)
@@ -69,7 +78,7 @@ let render image_e =
   |> E.map_s output_image
 
 let init () =
-  let term = Term.create ~nosig:false () in
+  let term = Notty_lwt.Term.create ~mouse:true ~dispose:true () ~nosig:false in
   Lwt_main.at_exit (fun () -> Term.release term);
   term_supd @@ Some term
 
