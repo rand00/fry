@@ -1,22 +1,29 @@
 open Lwt_react
 
-let create ~tick_e ~f e =
+let of_env_signal ~tick_e ~f e =
   let s = 
     e
     |> Event.add_index
     |> E.map Option.some
     |> S.hold ~eq:Eq.never None
   in
-  S.sample (fun _ v -> v) tick_e s
+  let sampled_s =
+    S.l2 ~eq:Eq.never Tuple.mk2 f s 
+  in
+  S.sample (fun _ v -> v) tick_e sampled_s
   |> E.fold (fun (last_i, _env, env_i as acc) -> function
-    | None -> acc
-    | Some (i, v) ->
+    | _, None -> acc
+    | f, Some (i, v) ->
       let env_i = if Int.equal last_i i then succ env_i else 0 in
       let env = f ~i:env_i ~v in
       i, env, env_i
   ) (-1, 0., -1)
   |> E.map (fun (_, env, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
+
+let create ~tick_e ~f e =
+  let f = S.const f in
+  of_env_signal ~tick_e ~f e
 
 let to_int f = f |> Float.round |> Float.to_int
 

@@ -36,8 +36,8 @@ module Make (P : PARAM) = struct
 
   let run () =
     let rec loop tick =
-      choose_bpm_and_sleep (S.value P.bpm_s) >>= fun () ->
       tick_eupd tick;
+      choose_bpm_and_sleep (S.value P.bpm_s) >>= fun () ->
       loop @@ succ tick
     in
     loop 0
