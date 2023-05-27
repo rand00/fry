@@ -55,3 +55,9 @@ let downsample ~to_ ~zero ~add input_e =
       else None
   )
 
+(**A delayed single event, to allow mapping to signal to pick up the event*)
+let make_instant_singleton ~sleep =
+  let open Lwt.Infix in
+  let e, u = E.create () in
+  Lwt.async (fun () -> sleep 0.01 >|= u);
+  e
