@@ -67,6 +67,26 @@ let phase ~length ~shift f ~i ~v =
   let i = (i + to_int shift) mod to_int length in
   f ~i ~v
 
+(*> gomaybe; remove?; this seems unneccesary - works without this (even more correctly)
+  .. this might be needed for managing infinite/repeating envelopes
+*)
+(*> Note that modulating length will probably not accumulate to a precise
+    envelope position relative to modulated bpm.
+    Therefore you should probably keep the envelope length quite a lot shorter
+    than the full length between beats, to avoid cutting off envelope midway
+*)
+(* let phase_correct ~prev_length ~length f ~i ~v = *)
+(*   if length > 0. then *)
+(*     let prev_length' = to_int prev_length in *)
+(*     let iter_i = i / prev_length' in *)
+(*     let prev_env_i = i mod prev_length' in *)
+(*     let prev_env_i_pct = float prev_env_i /. prev_length in *)
+(*     let env_i = prev_env_i_pct *. length in *)
+(*     let i = length *. float iter_i +. env_i |> to_int in *)
+(*     f ~i ~v *)
+(*   else *)
+(*     f ~i ~v *)
+
 let sum fs ~i ~v = List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let pure x ~i ~v = x
