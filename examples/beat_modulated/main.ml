@@ -17,6 +17,7 @@ let bpm_sine_s =
     let length = duration *. render_fps in
     Fry.Envelope.(sine ~length |> Inf.of_finite ~length)
   in
+  (*> Note: A single event that triggers an infinite envelope*)
   Fry.Event.make_instant_singleton ~sleep
   |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
   |> S.map (fun v -> 10. +. 6. *. v)
@@ -26,7 +27,12 @@ module Beat = Fry.Beat.Make(struct
     let sleep = sleep
   end)
 
-(*> Note that this goes back/forwards in time as bpm is modulated*)
+(*goto this should keep the position in envelope when bpm is modulated
+  .. currently it goes backwards/forwards in time
+  * mental model:
+    * currently the bpm-modulation is relative to start of envelope
+      * instead it should be relative to current position in envelope 
+*)
 let envelope bpm =
   let duration = Fry.Time.of_bpm bpm /. 1.7 in
   let length = duration *. render_fps 
