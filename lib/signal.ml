@@ -31,4 +31,9 @@ let of_signals ?(eq=(=)) : 'a signal list -> 'a list signal = fun signals ->
   in
   aux signals 
 
+let with_prev_value s =
+  let init = None, S.value s in
+  S.changes s
+  |> E.fold (fun (_, prev_v) v -> Some prev_v, v) init
+  |> S.hold ~eq:Eq.never init
 
