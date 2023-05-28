@@ -22,25 +22,41 @@ let bpm_sine_s =
   |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
   |> S.map (fun v -> 10. +. 6. *. v)
 
+(*> Note: ordinary sine also gets interrupted by new Beat.e*)
+(* let bpm_sine_s = S.const 10. *)
+
 module Beat = Fry.Beat.Make(struct
     let bpm_s = bpm_sine_s
     let sleep = sleep
   end)
 
-(*goto this should keep the position in envelope when bpm is modulated
-  .. currently it goes backwards/forwards in time
-  * mental model:
-    * currently the bpm-modulation is relative to start of envelope
-      * instead it should be relative to current position in envelope 
+(*> Note: phase-correction is done as envelopes can have their length
+    depend on bpm. If there is no phase-correction, the envelope will go
+    back/forwards in time - which can be interesting in itself, but is probably
+    not what was intended.
+    In contrast, with phase-correction, the envelope will just
+    slow-down/speed-up.
 *)
-let envelope bpm =
-  let duration = Fry.Time.of_bpm bpm /. 1.7 in
-  let length = duration *. render_fps 
-  in
-  Fry.Envelope.sine ~length
+let envelope =
+  let phase_correct = Fry.Envelope.make_phase_correct () in
+  fun (prev_bpm, bpm) ->
+    let calc_length bpm = 
+      let duration = Fry.Time.of_bpm bpm /. 1.7 in
+      duration *. render_fps
+    in
+    let length = calc_length bpm in
+    let prev_bpm = prev_bpm |> CCOption.get_or ~default:bpm in
+    let prev_length = calc_length prev_bpm
+    in
+    Fry.Envelope.sine ~length
+    |> phase_correct ~prev_length ~length
 
 let envelope_s =
-  let env_s = bpm_sine_s |> S.map ~eq:Fry.Eq.never envelope in
+  let env_s =
+    bpm_sine_s
+    |> Fry.Signal.with_prev_value
+    |> S.map ~eq:Fry.Eq.never envelope
+  in
   Beat.e |> Fry.Envelope.of_env_signal ~tick_e:Render_tick.e ~f:env_s
 
 let _out = 
