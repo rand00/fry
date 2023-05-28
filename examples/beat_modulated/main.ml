@@ -22,9 +22,6 @@ let bpm_sine_s =
   |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
   |> S.map (fun v -> 10. +. 6. *. v)
 
-(*> Note: ordinary sine also gets interrupted by new Beat.e*)
-(* let bpm_sine_s = S.const 10. *)
-
 module Beat = Fry.Beat.Make(struct
     let bpm_s = bpm_sine_s
     let sleep = sleep
