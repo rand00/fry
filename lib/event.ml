@@ -59,5 +59,7 @@ let downsample ~to_ ~zero ~add input_e =
 let create_instant ~sleep =
   let open Lwt.Infix in
   let e, u = E.create () in
+  (*> goto maybe this sleep time should be much shorter
+      .. some programs might depend on this being more "instant" *)
   Lwt.async (fun () -> sleep 0.01 >|= u);
   e
