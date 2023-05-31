@@ -18,7 +18,7 @@ let bpm_sine_s =
     Fry.Envelope.(sine ~length |> Inf.of_finite ~length)
   in
   (*> Note: A single event that triggers an infinite envelope*)
-  Fry.Event.make_instant_singleton ~sleep
+  Fry.Event.create_instant ~sleep
   |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
   |> S.map (fun v -> 10. +. 6. *. v)
 
@@ -27,10 +27,11 @@ module Beat = Fry.Beat.Make(struct
     let sleep = sleep
   end)
 
-(*> Note: phase-correction is done as envelopes can have their length
-    depend on bpm. If there is no phase-correction, the envelope will go
-    back/forwards in time - which can be interesting in itself, but is probably
-    not what was intended.
+(*> Note: phase-correction is done as this envelopes length depend on the bpm.
+    If there is no phase-correction of a bpm-dependent envelope, it will go
+    back and forwards in time - which can be interesting in itself, but is
+    probably not what was intended.
+  
     In contrast, with phase-correction, the envelope will just
     slow-down/speed-up.
 *)
