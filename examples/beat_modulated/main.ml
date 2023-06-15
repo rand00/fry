@@ -20,7 +20,7 @@ let bpm_sine_s =
   (*> Note: A single event that triggers an infinite envelope*)
   Fry.Event.create_instant ~sleep
   |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
-  |> S.map (fun v -> 10. +. 6. *. v)
+  |> S.map (fun v -> 10. +. 20. *. v)
 
 module Beat = Fry.Beat.Make(struct
     let bpm_s = bpm_sine_s
