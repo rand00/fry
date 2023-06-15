@@ -29,14 +29,22 @@ module Make (P : PARAM) = struct
     else
       Lwt.return bpm
 
+  let eps = 0.000001
+
+  let never_t = Lwt_mvar.(create_empty () |> take)
+    
   (*> Note that modulating bpm will probably not accumulate to a precise bpm*)
   (*gomaybe there could be some potential to implement using S.bind, could try again
     ideas;
     * trigger/sample first bpm-value, if using S.changes
   *)
   let rec choose_bpm_and_sleep bpm =
+    let sleep_t =
+      if bpm < eps then never_t else
+        P.sleep @@ 60. /. bpm
+    in
     Lwt.pick [
-      P.sleep @@ 60. /. bpm;
+      sleep_t;
       slow_sample_bpm bpm >>= choose_bpm_and_sleep;
     ]
 
