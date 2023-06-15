@@ -31,21 +31,30 @@ module Make (P : PARAM) = struct
 
   let eps = 0.000001
 
-  let never_t = Lwt_mvar.(create_empty () |> take)
-    
   (*> Note that modulating bpm will probably not accumulate to a precise bpm*)
   (*gomaybe there could be some potential to implement using S.bind, could try again
     ideas;
     * trigger/sample first bpm-value, if using S.changes
   *)
+  (*> goto goo; when slowing down bpm, the existing beat should be
+      extended instead of letting it shoot at its planned time
+      * this should happen recursively, so last time a beat was started and
+        wasn't resolved is kept in acc state
+  *)
   let rec choose_bpm_and_sleep bpm =
     let sleep_t =
-      if bpm < eps then never_t else
+      if bpm < eps then
+        let never_t = Lwt_mvar.(create_empty () |> take) in
+        (*< Note: created here to be repetitively cancelable*)
+        never_t
+      else
         P.sleep @@ 60. /. bpm
     in
+    let new_bpm_t = slow_sample_bpm bpm in
     Lwt.pick [
+      (*> goto this should never resolve if new bpm is received*)
       sleep_t;
-      slow_sample_bpm bpm >>= choose_bpm_and_sleep;
+      new_bpm_t >>= choose_bpm_and_sleep;
     ]
 
   let run () =
