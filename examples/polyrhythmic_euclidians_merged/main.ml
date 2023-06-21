@@ -1,9 +1,8 @@
 open Lwt_react
 
-module Beat = Fry.Beat.Make(struct
-  let bpm_s = S.const (120. *. 3.)
-  let sleep = Lwt_unix.sleep
-end)
+let bpm_s = S.const (120. *. 3.)
+
+let beat_e = Fry.Beat.make ~bpm_s
 
 let rhythm_e =
   let rhythms = Fry.Rhythm.[
@@ -12,7 +11,7 @@ let rhythm_e =
     Euclidean.make ~len:8 ~n:7 |> rotate_left 4;
   ]
   in
-  Beat.e
+  beat_e
   |> E.fmap (fun tick ->
     if CCList.for_all (Fry.Rhythm.Bool.is_on ~tick) rhythms then
       Some tick
@@ -24,4 +23,7 @@ let _out =
     Printf.printf "merged polyrhythmic euclidians on tick = %d\n%!" i
   )
 
-let () = Lwt_main.run @@ Beat.run ()
+let () =
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()

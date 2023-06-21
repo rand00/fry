@@ -2,11 +2,9 @@ open Lwt_react
 open Lwt.Syntax
 
 let bpm = 120. 
+let bpm_s = S.const bpm
 
-module Beat = Fry.Beat.Make(struct
-  let bpm_s = S.const bpm
-  let sleep = Lwt_unix.sleep
-end)
+let beat_e = Fry.Beat.make ~bpm_s
 
 let rhythm = Fry.Rhythm.(
   [ true; true; true; true ] |> Bool.mapi (function
@@ -19,7 +17,7 @@ let rhythm = Fry.Rhythm.(
 )
 
 let rhythm_e =
-  Beat.e
+  beat_e
   |> E.fmap (fun tick -> CCOption.Infix.(
     Fry.Rhythm.Option.get ~tick rhythm >>= fun (`Prob p) ->
     if Random.float 100. < p then
@@ -33,4 +31,7 @@ let _out =
     Printf.printf "probabilistic notes in a rhythm = %d\n%!" i
   )
 
-let () = Lwt_main.run @@ Beat.run ()
+let () =
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()

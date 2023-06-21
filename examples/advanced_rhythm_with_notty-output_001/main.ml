@@ -12,18 +12,16 @@ type note = {
 (*> Note the divisibility of 2; for sync of beats when halving them*)
 let bpm_mul = 2. ** 3. 
 let bpm = 120. *. bpm_mul
+let bpm_s = S.const bpm
 
-module Fast_beat = Fry.Beat.Make(struct
-  let bpm_s = S.const bpm
-  let sleep = Lwt_unix.sleep
-end)
+let fast_beat_e = Fry.Beat.make ~bpm_s
 
 let half_fast_beat =
-  Fast_beat.e
+  fast_beat_e
   |> Fry.Beat.divide_speed ~by:(truncate bpm_mul / 2) 
 
 let normal_beat =
-  Fast_beat.e
+  fast_beat_e
   |> Fry.Beat.divide_speed ~by:(truncate bpm_mul) 
 
 (*> Note: we use these aliases for true/false to easily visualize the
@@ -61,7 +59,7 @@ let choose_ratchet v =
     (*> Note the use of the Fry.Rhythm.context, which contains rhythm_index*)
     if v.rhythm_index mod 2 = 0 then
       let ratchet_e =
-        Fast_beat.e |> Fry.Event.limit 4 |> stamp_note
+        fast_beat_e |> Fry.Event.limit 4 |> stamp_note
       in
       Some ratchet_e
     else
@@ -87,21 +85,20 @@ let rhythm_02_e = eval_rhythm rhythm_02
 let render_fps = 30.
 
 (*> Note: This is for defining envelopes over the rhythms*)
-module Render_tick = Fry.Beat.Make(struct
-  let bpm_s = S.const (render_fps *. 60. (*secs*))
-  let sleep = Lwt_unix.sleep
-end)
+let render_tick_e =
+  let bpm_s = S.const (render_fps *. 60. (*secs*)) in
+  Fry.Beat.make ~bpm_s
 
 let env_duration = 0.2
 let env_length = env_duration *. render_fps
 
 (*> Note: For each rhythmic beat, a smooth envelope is created*)
 let envelope_01_s =
-  rhythm_01_e |> Fry.Envelope.create ~tick_e:Render_tick.e
+  rhythm_01_e |> Fry.Envelope.create ~tick_e:render_tick_e
     ~f:(Fry.Envelope.sine ~length:env_length)
 
 let envelope_02_s =
-  rhythm_02_e |> Fry.Envelope.create ~tick_e:Render_tick.e
+  rhythm_02_e |> Fry.Envelope.create ~tick_e:render_tick_e
     ~f:(Fry.Envelope.sine ~length:env_length)
 
 let _out =
@@ -111,7 +108,6 @@ let _out =
 
 let () =
   Fry_io.Term.init ();
-  Lwt_main.run @@ Lwt.pick [
-    Fast_beat.run ();
-    Render_tick.run ();
-  ]
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()

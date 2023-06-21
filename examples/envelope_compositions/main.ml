@@ -1,19 +1,16 @@
 open Lwt_react
 
 let bpm = 40.
+let bpm_s = S.const bpm
 
-module Beat = Fry.Beat.Make(struct
-  let bpm_s = S.const bpm
-  let sleep = Lwt_unix.sleep
-end)
+let beat_e = Fry.Beat.make ~bpm_s
 
 let render_fps = 60.
 
-module Render_tick = Fry.Beat.Make(struct
-  let bpm_s = S.const @@ Fry.Time.bpm_of_fps render_fps
-  let sleep = Lwt_unix.sleep
-end)
-
+let render_tick_e =
+  let bpm_s = S.const @@ Fry.Time.bpm_of_fps render_fps in
+  Fry.Beat.make ~bpm_s
+  
 (*> Note: Here we compose different envelopes to make a complex one*)
 let envelope =
   let duration = Fry.Time.of_bpm bpm /. 1.5 in
@@ -32,16 +29,16 @@ let envelope =
   )
 
 let envelope_s =
-  Beat.e |> Fry.Envelope.create ~tick_e:Render_tick.e ~f:envelope
+  beat_e |> Fry.Envelope.create ~tick_e:render_tick_e ~f:envelope
 
 let _out =
   Fry_io.Term.Out.envelopes ~typ:`Line [ envelope_s ]
 
 let () =
   Fry_io.Term.init ();
-  Lwt_main.run @@ Lwt.pick [
-    Beat.run ();
-    Render_tick.run ();
-  ]
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()
+
 
   

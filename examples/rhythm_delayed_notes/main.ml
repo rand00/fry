@@ -2,11 +2,9 @@ open Lwt_react
 open Lwt.Syntax
 
 let bpm = 120. 
+let bpm_s = S.const bpm
 
-module Beat = Fry.Beat.Make(struct
-  let bpm_s = S.const bpm
-  let sleep = Lwt_unix.sleep
-end)
+let beat_e = Fry.Beat.make ~bpm_s
 
 let rhythm = Fry.Rhythm.(
   [ true; true; true; true ] |> Bool.mapi (fun i ->
@@ -15,7 +13,7 @@ let rhythm = Fry.Rhythm.(
 )
 
 let rhythm_e =
-  Beat.e
+  beat_e
   |> E.fmap (fun tick ->
     Fry.Rhythm.Option.get ~tick rhythm |> Option.map (fun v ->
       tick, v
@@ -33,4 +31,7 @@ let _out =
     Printf.printf "4/4 rhythm with delayed 3rd note = %d\n%!" i
   )
 
-let () = Lwt_main.run @@ Beat.run ()
+let () =
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()

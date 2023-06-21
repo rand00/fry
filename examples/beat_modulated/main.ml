@@ -6,10 +6,9 @@ let render_fps = 60.
 
 let sleep = Lwt_unix.sleep
 
-module Render_tick = Fry.Beat.Make(struct
-    let bpm_s = S.const @@ Fry.Time.bpm_of_fps render_fps
-    let sleep = sleep
-  end)
+let render_tick_e =
+  let bpm_s = S.const @@ Fry.Time.bpm_of_fps render_fps in
+  Fry.Beat.make ~bpm_s
 
 let bpm_sine_s =
   let f =
@@ -19,13 +18,10 @@ let bpm_sine_s =
   in
   (*> Note: A single event that triggers an infinite envelope*)
   Fry.Event.create_instant ~sleep
-  |> Fry.Envelope.create ~tick_e:Render_tick.e ~f
+  |> Fry.Envelope.create ~tick_e:render_tick_e ~f
   |> S.map (fun v -> 10. +. 20. *. v)
 
-module Beat = Fry.Beat.Make(struct
-    let bpm_s = bpm_sine_s
-    let sleep = sleep
-  end)
+let beat_e = Fry.Beat.make ~bpm_s:bpm_sine_s
 
 (*> Note: phase-correction is done as this envelopes length depend on the bpm.
     If there is no phase-correction of a bpm-dependent envelope, it will go
@@ -55,15 +51,15 @@ let envelope_s =
     |> Fry.Signal.with_prev_value
     |> S.map ~eq:Fry.Eq.never envelope
   in
-  Beat.e |> Fry.Envelope.of_env_signal ~tick_e:Render_tick.e ~f:env_s
+  beat_e |> Fry.Envelope.of_env_signal ~tick_e:render_tick_e ~f:env_s
 
 let _out = 
   Fry_io.Term.Out.envelopes ~typ:`Line [ envelope_s ]
 
 let () =
   Fry_io.Term.init ();
-  Lwt_main.run @@
-  Lwt.pick [ Beat.run (); Render_tick.run () ]
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()
 
 
 

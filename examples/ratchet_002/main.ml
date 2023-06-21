@@ -1,17 +1,16 @@
 open Lwt_react
 
-module Fast_beat = Fry.Beat.Make(struct
-  let bpm_s = S.const (120. *. 6.)
-  let sleep = Lwt_unix.sleep
-end)
+let bpm_s = S.const (120. *. 6.)
 
-let beat_e = Fast_beat.e |> Fry.Beat.divide_speed ~by:6
+let fast_beat_e = Fry.Beat.make ~bpm_s
+
+let beat_e = fast_beat_e |> Fry.Beat.divide_speed ~by:6
 
 let ratchet_e =
   let choose_ratchet (tick, _) =
     if tick mod 4 = 0 then
       let ratchet_e =
-        Fast_beat.e
+        fast_beat_e
         |> Fry.Event.limit 3
         |> E.map (fun tick' -> tick', "ratchet")
       in
@@ -28,4 +27,7 @@ let _out =
     Printf.printf "%s: %d\n%!" tag i
   )
 
-let () = Lwt_main.run @@ Fast_beat.run ()
+let () =
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()

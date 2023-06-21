@@ -2,17 +2,15 @@ open Lwt_react
 open Lwt.Syntax
 
 let bpm = 120. 
+let bpm_s = S.const bpm
 
-module Beat = Fry.Beat.Make(struct
-  let bpm_s = S.const bpm
-  let sleep = Lwt_unix.sleep
-end)
+let beat_e = Fry.Beat.make ~bpm_s
 
 let rhythm = 
   [ false; false; false; true; true; true ] 
 
 let rhythm_e =
-  Beat.e
+  beat_e
   |> E.fold (fun (_, rhythm') tick ->
     if Fry.Rhythm.index ~tick rhythm = 0 then
       let rhythm' = Fry.Rhythm.shuffle rhythm in
@@ -32,4 +30,7 @@ let _out =
     Printf.printf "shuffled rhythm = %d\n%!" i
   )
 
-let () = Lwt_main.run @@ Beat.run ()
+let () =
+  let sleep = Lwt_unix.sleep in
+  let max_bpm = 20000. in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()
