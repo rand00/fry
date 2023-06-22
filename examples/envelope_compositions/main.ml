@@ -37,8 +37,9 @@ let _out =
 let () =
   Fry_io.Term.init ();
   let sleep = Lwt_unix.sleep in
+  let time = Unix.gettimeofday in
   let max_bpm = 20000. in
-  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~time ~max_bpm ()
 
 
   

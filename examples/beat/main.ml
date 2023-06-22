@@ -20,4 +20,5 @@ let _out =
 let () =
   let sleep = Lwt_unix.sleep in
   let max_bpm = 20000. in
-  Lwt_main.run @@ Fry.Beat.run ~sleep ~max_bpm ()
+  let time = Unix.gettimeofday in
+  Lwt_main.run @@ Fry.Beat.run ~sleep ~time ~max_bpm ()
