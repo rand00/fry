@@ -61,5 +61,5 @@ let create_instant ~sleep =
   let e, u = E.create () in
   (*> goto maybe this sleep time should be much shorter
       .. some programs might depend on this being more "instant" *)
-  Lwt.async (fun () -> sleep 0.01 >|= u);
+  Lwt.async (fun () -> sleep 0.01 >|= fun () -> u ());
   e
