@@ -5,6 +5,7 @@ let clamp from to_ v =
   else if v > to_ then to_
   else v
 
+(*> Note that clamping on [0;1] happens when acc_envs = Some _*)
 let of_env_signal ?(acc_envs=None) ~tick_e ~f e =
   let s = 
     e
