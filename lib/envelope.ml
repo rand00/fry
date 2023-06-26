@@ -1,6 +1,11 @@
 open Lwt_react
 
-let of_env_signal ~tick_e ~f e =
+let clamp from to_ v =
+  if v < from then from
+  else if v > to_ then to_
+  else v
+
+let of_env_signal ?(acc_envs=None) ~tick_e ~f e =
   let s = 
     e
     |> Event.add_index
@@ -11,19 +16,43 @@ let of_env_signal ~tick_e ~f e =
     S.l2 ~eq:Eq.never Tuple.mk2 f s 
   in
   S.sample (fun _ v -> v) tick_e sampled_s
-  |> E.fold (fun (last_i, _env, env_i as acc) -> function
-    | _, None -> acc
+  |> E.fold (fun (last_i, _env, env_i, envs as acc) -> function
+    | _, None -> acc (*< Note: before any event has happened*)
     | f, Some (i, v) ->
+      let f ~v ~i = f ~i ~v in
+      let env_partial = f ~v in
+      (*< Note: as OCaml wants a specific param order*)
       let env_i = if Int.equal last_i i then succ env_i else 0 in
-      let env = f ~i:env_i ~v in
-      i, env, env_i
-  ) (-1, 0., -1)
-  |> E.map (fun (_, env, _) -> env)
+      let env, envs = match acc_envs with
+        | None -> f ~v ~i:env_i, []
+        | Some length ->
+          let envs =
+            envs |> CCList.map (fun (f, prev_env_i) ->
+              f, succ prev_env_i
+            )
+          in
+          let envs = 
+            if env_i = 0 then 
+              (env_partial, 0) :: envs
+              |> CCList.take length
+            else envs 
+          in
+          let env =
+            envs
+            |> CCList.fold_left (fun acc (f, env_i) ->
+              acc +. f ~i:env_i |> clamp 0. 1.
+            ) 0.
+          in
+          env, envs
+      in
+      i, env, env_i, envs
+  ) (-1, 0., -1, [])
+  |> E.map (fun (_, env, _, _) -> env)
   |> S.hold ~eq:CCFloat.equal 0.
 
-let create ~tick_e ~f e =
+let create ?(acc_envs=None) ~tick_e ~f e =
   let f = S.const f in
-  of_env_signal ~tick_e ~f e
+  of_env_signal ~acc_envs ~tick_e ~f e
 
 let to_int f = f |> Float.round |> Float.to_int
 
