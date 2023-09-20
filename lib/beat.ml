@@ -32,7 +32,7 @@ let make ~bpm_s =
   |> E.fold shoot (None, 0, 0, 0.)
   |> E.fmap (fun (out, _, _, _) -> out)
 
-let run ~sleep ~time ~max_bpm () =
+let run ~sleep ~time ?(max_bpm=20_000.) () =
   let fps = Time.fps_of_bpm max_bpm in
   fps_supd fps;
   let perfect_sleep_time = 1. /. fps in
