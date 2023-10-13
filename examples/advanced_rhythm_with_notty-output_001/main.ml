@@ -49,8 +49,6 @@ let rhythm_02 =
     | _ -> { delay = None; ratchet = false }
   )
 
-(*> Note that this function returns dynamically created events which
-    are passed to `Fry.Event.limit`*)
 let choose_ratchet v =
   let stamp_note e =
     E.stamp e { v with note = { delay = None; ratchet = false }}
