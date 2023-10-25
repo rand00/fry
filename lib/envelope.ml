@@ -91,7 +91,12 @@ let sub f g = apply (-.) f g
 let mul f g = apply ( *. ) f g
 let max f g = apply Float.max f g
 let min f g = apply Float.min f g
-
+let gt  f g = apply (fun x y -> if x > y then 1. else 0.) f g 
+let lt  f g = gt g f
+let eq ~eps f g = apply (fun x y ->
+  if x +. eps > y && x -. eps < y then 1. else 0.
+) f g 
+  
 let phase ~length ~shift f ~i ~v =
   (*> Note: the reason for 'mod length' is that envelopes can be finite*)
   let i = (i + to_int shift) mod to_int length in
