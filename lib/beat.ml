@@ -40,6 +40,10 @@ let run ~sleep ~time ?(max_bpm=20_000.) () =
   let rec loop tick =
     tick_eupd tick;
     let perfect_time = start +. float tick *. Time.of_bpm max_bpm in
+    (*> goto only do this once in a while for efficiency
+        * and also keep an updated 'avg-best-sleep-dur' which is used
+          instead of perfect_sleep_dur
+    *)
     let now = time () in
     let diff_time = perfect_time -. now in
     let sleep_time =
