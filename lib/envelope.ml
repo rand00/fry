@@ -70,6 +70,11 @@ module Inf = struct
 
 end
 
+(*spec for envelope functions:
+  * they should all be finite by default
+  * when an envelope ends, its value goes to 0.
+*)
+
 let sine ~length ~i ~v =
   let i_f = float i in
   let i_pct = i_f /. length in
@@ -96,7 +101,22 @@ let lt  f g = gt g f
 let eq ~eps f g = apply (fun x y ->
   if x +. eps > y && x -. eps < y then 1. else 0.
 ) f g 
-  
+
+(*> Note: useful for composition over time*)
+let delay ~n f ~i ~v =
+  if i < n then
+    0.
+  else (*i >= n*)
+    let i = i - n in
+    f ~i ~v
+
+(*> goto problem: this makes 'f' into an infinite envelope...
+  * problem if casing on value of 'i':
+    * either the function won't support finite envelopes,
+    * or it wont support infinite ones
+    * @idea; could check if 'f ~i ~v > 0.' and then expect it to be infinite if
+      also 'i >= length'
+*)
 let phase ~length ~shift f ~i ~v =
   (*> Note: the reason for 'mod length' is that envelopes can be finite*)
   let i = (i + to_int shift) mod to_int length in
