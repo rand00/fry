@@ -55,7 +55,7 @@ let create ?(acc_envs=None) ~tick_e ~f e =
   let f = S.const f in
   of_env_signal ~acc_envs ~tick_e ~f e
 
-let to_int f = f |> Float.round |> Float.to_int
+let to_int f = f |> CCFloat.round |> CCFloat.to_int
 
 module Inf = struct
 
@@ -79,23 +79,29 @@ let sine ~length ~i ~v =
   let i_f = float i in
   let i_pct = i_f /. length in
   if i_pct >= 1. then 0. else 
-    let angle = i_pct *. Float.pi *. 2. in
-    (1. +. sin (angle -. Float.pi /. 2.)) /. 2.
+    let angle = i_pct *. CCFloat.pi *. 2. in
+    (1. +. sin (angle -. CCFloat.pi /. 2.)) /. 2.
 
 let cut_start length f ~i ~v =
   f ~i:(to_int length + i) ~v
 
+(*> goto warning: this relies on expectation that 'f Int.max' will be = 0.
+    .. which is not the case for infinite waves; should just return 0. instead 
+*)
 let cut_end length f ~i ~v =
   let i = if i >= to_int length then Int.max_int else i in
   f ~i ~v
+
+let zero ~i ~v = 0.
+let one ~i ~v = 1.
 
 let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
 
 let add f g = apply (+.) f g
 let sub f g = apply (-.) f g
 let mul f g = apply ( *. ) f g
-let max f g = apply Float.max f g
-let min f g = apply Float.min f g
+let max f g = apply CCFloat.max f g
+let min f g = apply CCFloat.min f g
 let gt  f g = apply (fun x y -> if x > y then 1. else 0.) f g 
 let lt  f g = gt g f
 let eq ~eps f g = apply (fun x y ->
@@ -104,6 +110,7 @@ let eq ~eps f g = apply (fun x y ->
 
 (*> Note: useful for composition over time*)
 let delay ~n f ~i ~v =
+  let n = to_int n in
   if i < n then
     0.
   else (*i >= n*)
@@ -117,6 +124,7 @@ let delay ~n f ~i ~v =
     * @idea; could check if 'f ~i ~v > 0.' and then expect it to be infinite if
       also 'i >= length'
 *)
+(*> goto support negative shifting*)
 let phase ~length ~shift f ~i ~v =
   (*> Note: the reason for 'mod length' is that envelopes can be finite*)
   let i = (i + to_int shift) mod to_int length in
@@ -151,7 +159,7 @@ let make_phase_correct () =
     let i = i + !acc_diff_i in
     f ~i ~v
 
-let sum fs ~i ~v = List.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
+let sum fs ~i ~v = CCList.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let pure x ~i ~v = x
 
@@ -160,10 +168,10 @@ let cmin c f = min f @@ pure c
 
 (** Note that this depends on 'f' being pure*)
 let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
-  let vs = List.init (to_int length) (fun i -> f ~i ~v:v_static) in
-  let min_v, max_v = List.fold_left (fun (min_v, max_v) v ->
-    Float.min min_v v, Float.max max_v v
-  ) (Float.max_float, Float.min_float) vs
+  let vs = CCList.init (to_int length) (fun i -> f ~i ~v:v_static) in
+  let min_v, max_v = vs |> CCList.fold_left (fun (min_v, max_v) v ->
+    CCFloat.min min_v v, CCFloat.max max_v v
+  ) (Float.max_float, CCFloat.min_value)
   in
   let range_v = max_v -. min_v in
   if min_v >= 0. then
@@ -172,7 +180,7 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
   else (
     if cut_negative then
       (*For understandable handling of messy envelopes*)
-      fun ~i ~v -> Float.max 0. (f ~i ~v) /. max_v
+      fun ~i ~v -> CCFloat.max 0. (f ~i ~v) /. max_v
     else 
       (*If envelope is negative, we move envelope up*)
       fun ~i ~v -> (f ~i ~v -. min_v) /. range_v
@@ -183,9 +191,12 @@ let points l ~i ~v =
   let interp_aux i v2 v2' =
     let diff_x = fst v2' -. fst v2 in
     let diff_y = snd v2' -. snd v2 in
-    let i_pct = (i -. fst v2) /. diff_x in
-    let y_rel = i_pct *. diff_y in
-    snd v2 +. y_rel
+    if CCFloat.equal diff_x 0. then
+      snd v2
+    else 
+      let i_pct = (i -. fst v2) /. diff_x in
+      let y_rel = i_pct *. diff_y in
+      snd v2 +. y_rel
   in
   let i = float i in
   let rec aux ~vec_prev = function
