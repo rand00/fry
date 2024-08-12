@@ -100,8 +100,15 @@ let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
 let add f g = apply (+.) f g
 let sub f g = apply (-.) f g
 let mul f g = apply ( *. ) f g
+
+let and_ = mul
+let or_ ?(eps=0.0000001) f g =
+  let aux fv gv = if fv > eps then fv else gv in
+  apply aux f g
+
 let max f g = apply CCFloat.max f g
 let min f g = apply CCFloat.min f g
+
 let gt  f g = apply (fun x y -> if x > y then 1. else 0.) f g 
 let lt  f g = gt g f
 let eq ~eps f g = apply (fun x y ->
@@ -213,6 +220,12 @@ let points l ~i ~v =
   aux ~vec_prev:(0., 0.) l
 
 let adsr a d s r = [ a; d; s; r ] |> points
+
+let ramp ~length =
+  points [
+    0.0, 0.0;
+    0.1 *. length, 1.0;
+  ]
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
