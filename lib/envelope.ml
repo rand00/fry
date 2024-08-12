@@ -162,6 +162,7 @@ let make_phase_correct () =
 let sum fs ~i ~v = CCList.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let pure x ~i ~v = x
+let const = pure
 
 let cmul c f = mul f @@ pure c
 let cmin c f = min f @@ pure c
