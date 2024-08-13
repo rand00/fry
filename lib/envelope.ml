@@ -105,6 +105,17 @@ let sub f g = apply (-.) f g
 let mul f g = apply ( *. ) f g
 
 let and_ = mul
+(*> Note:
+  * warning: the continuity of the output of this depends on the given
+    envelopes
+    * e.g.
+      * if the left envelope goes to 0. before the end, then it will jump
+        to the right envelopes value
+      * if the right envelope does not start at the same value as the first
+        envelope ends at (before 0.) - then there is a jump
+    * though this semantics also enables interesting switch-semantics
+      e.g. by multiplying left envelope by a 'boolean' filter-envelope
+*)
 let or_ ?(eps=0.0000001) f g =
   let aux fv gv = if fv > eps then fv else gv in
   apply aux f g
