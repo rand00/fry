@@ -1,5 +1,8 @@
 open Lwt_react
 
+let pure x ~i ~v = x
+let const = pure
+
 let clamp from to_ v =
   if v < from then from
   else if v > to_ then to_
@@ -115,6 +118,11 @@ let eq ~eps f g = apply (fun x y ->
   if x +. eps > y && x -. eps < y then 1. else 0.
 ) f g 
 
+let keep_last_value ~length f =
+  let length = to_int length in
+  let last_v = f ~i:(pred length) ~v:() in
+  or_ f (const last_v)
+
 (*> Note: useful for composition over time*)
 let delay ~n f ~i ~v =
   let n = to_int n in
@@ -168,9 +176,6 @@ let make_phase_correct () =
 
 let sum fs ~i ~v = CCList.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
-let pure x ~i ~v = x
-let const = pure
-
 let cmul c f = mul f @@ pure c
 let cmin c f = min f @@ pure c
 
@@ -194,6 +199,12 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
       fun ~i ~v -> (f ~i ~v -. min_v) /. range_v
   )
 
+(*> Note semantics are:
+  * the given list contains the tuples:
+    * the 'frame-index' (= pct *. length)
+    * the y-value of the frame-index
+  * .. interpolation is used to find the points between frame-indexes
+*)
 let points l ~i ~v =
   (*> Note: depends on i being in between v2.x and v2'.x*)
   let interp_aux i v2 v2' =
