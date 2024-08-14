@@ -214,7 +214,13 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
   * the given list contains the tuples:
     * the 'frame-index' (= pct *. length)
     * the y-value of the frame-index
-  * .. interpolation is used to find the points between frame-indexes
+      * .. interpolation is used to find the points between frame-indexes
+  * Advantages of this semantics:
+    * you can easily express relative values from different types of data:
+      * 'pct *. length'
+      * 'secs *. fps'
+    * you can't make an unordered list of absolute values by mistake
+    * you can insert element in envelope without updating later values
 *)
 let points l ~i ~v =
   (*> Note: depends on i being in between v2.x and v2'.x*)
