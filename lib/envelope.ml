@@ -149,6 +149,7 @@ let delay ~n f ~i ~v =
     * or it wont support infinite ones
     * @idea; could check if 'f ~i ~v > 0.' and then expect it to be infinite if
       also 'i >= length'
+    * @idea (better); could also make two versions - one for finite and one infinite
 *)
 (*> goto support negative shifting*)
 let phase ~length ~shift f ~i ~v =
@@ -249,11 +250,7 @@ let points l ~i ~v =
 
 let adsr a d s r = [ a; d; s; r ] |> points
 
-let ramp ~length =
-  points [
-    0.0, 0.0;
-    0.1 *. length, 1.0;
-  ]
+let ramp ~length = points [ length, 1.0 ]
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
