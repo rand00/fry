@@ -129,10 +129,9 @@ let eq ~eps f g = apply (fun x y ->
   if x +. eps > y && x -. eps < y then 1. else 0.
 ) f g 
 
-let keep_last_value ~length f =
+let keep_last_value ~length f ~i ~v =
   let length = to_int length in
-  let last_v = f ~i:(pred length) ~v:() in
-  or_ f (const last_v)
+  if i >= length then f ~i:(pred length) ~v else f ~i ~v
 
 (*> Note: useful for composition over time*)
 let delay ~n f ~i ~v =
