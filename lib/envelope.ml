@@ -71,6 +71,10 @@ module Inf = struct
       let i_repeat = i / length in
       g ~i_repeat ~i @@ f ~i ~v
 
+  let keep_last_value ~length f ~i ~v =
+    let length = to_int length in
+    if i >= length then f ~i:(pred length) ~v else f ~i ~v
+
 end
 
 (*spec for envelope functions:
@@ -128,10 +132,6 @@ let lt  f g = gt g f
 let eq ~eps f g = apply (fun x y ->
   if x +. eps > y && x -. eps < y then 1. else 0.
 ) f g 
-
-let keep_last_value ~length f ~i ~v =
-  let length = to_int length in
-  if i >= length then f ~i:(pred length) ~v else f ~i ~v
 
 (*> Note: useful for composition over time*)
 let delay ~n f ~i ~v =
