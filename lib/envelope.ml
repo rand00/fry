@@ -89,10 +89,10 @@ let sine ~length ~i ~v =
     let angle = i_pct *. CCFloat.pi *. 2. in
     (1. +. sin (angle -. CCFloat.pi /. 2.)) /. 2.
 
-let cut_start length f ~i ~v =
+let drop length f ~i ~v =
   f ~i:(to_int length + i) ~v
 
-let cut_end length f ~i ~v =
+let take length f ~i ~v =
   if i >= to_int length then 0. else f ~i ~v
 
 let zero ~i ~v = 0.
