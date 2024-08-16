@@ -123,11 +123,13 @@ let or_ ?(eps=0.0000001) f g =
 let max f g = apply CCFloat.max f g
 let min f g = apply CCFloat.min f g
 
-let gt  f g = apply (fun x y -> if x > y then 1. else 0.) f g 
-let lt  f g = gt g f
-let eq ~eps f g = apply (fun x y ->
-  if x +. eps > y && x -. eps < y then 1. else 0.
-) f g 
+let gt f g = apply (fun (x:float) y -> if x > y then 1. else 0.) f g 
+let lt f g = gt g f
+let eq ~eps f g =
+  let eps' = eps /. 2. in
+  apply (fun x y ->
+    if x +. eps' > y && x -. eps' < y then 1. else 0.
+  ) f g 
 
 (*> Note: useful for composition over time*)
 let delay ~n f ~i ~v =
