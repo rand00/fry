@@ -92,12 +92,8 @@ let sine ~length ~i ~v =
 let cut_start length f ~i ~v =
   f ~i:(to_int length + i) ~v
 
-(*> goto warning: this relies on expectation that 'f Int.max' will be = 0.
-    .. which is not the case for infinite waves; should just return 0. instead 
-*)
 let cut_end length f ~i ~v =
-  let i = if i >= to_int length then Int.max_int else i in
-  f ~i ~v
+  if i >= to_int length then 0. else f ~i ~v
 
 let zero ~i ~v = 0.
 let one ~i ~v = 1.
