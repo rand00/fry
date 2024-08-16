@@ -212,11 +212,13 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
       fun ~i ~v -> (f ~i ~v -. min_v) /. range_v
   )
 
-(*> Note semantics are:
-  * the given list contains the tuples:
-    * the 'frame-index' (= pct *. length)
-    * the y-value of the frame-index
-      * .. interpolation is used to find the points between frame-indexes
+(*> Note
+  * Semantics:
+    * the given list contains the tuples:
+      * the relative 'frames' duration (= pct *. length OR secs *. fps)
+      * the y-value of the frame-index
+        * .. interpolation is used to find the points between frame-indexes
+    * the point '0., 0.' is implicitly always present
   * Advantages of this semantics:
     * you can easily express relative values from different types of data:
       * 'pct *. length'
