@@ -186,7 +186,11 @@ let make_phase_correct () =
 let sum fs ~i ~v = CCList.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let cmul c f = mul f @@ pure c
+let cadd c f = add f @@ pure c
+let csub c f = sub f @@ pure c
+
 let cmin c f = min f @@ pure c
+let cmax c f = max f @@ pure c
 
 (** Note that this depends on 'f' being pure*)
 let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
