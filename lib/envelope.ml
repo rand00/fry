@@ -140,6 +140,52 @@ let delay ~n f ~i ~v =
     let i = i - n in
     f ~i ~v
 
+(*> goto make ranges typesafe (unit-types) somehow?*)
+(*spec ranges param: a list of absolute frame-index tuples: start * stop *)
+let extract ~ranges anim = 
+  ranges |> CCList.fold_left (fun (acc_anim, acc_start) (start, stop) ->
+    let length = stop -. start in
+    let anim_snippet = anim |> drop start |> take length in
+    let acc_anim =
+      acc_anim |> add (
+        delay ~n:(float acc_start) anim_snippet
+      )
+    in
+    let acc_start = acc_start + truncate length in
+    acc_anim, acc_start
+  ) (zero, 0)
+  |> fst
+
+(*> goto test; hasn't been used, but is derived from another more custom helper
+    I made outside of Fry *)
+let random_chronological_switch ~seed ~length anims =
+  let module R = Random.State in
+  let r = R.make [| seed |] in
+  let len_anims = CCArray.length anims in
+  let anim_idxs =
+    let rec aux ~prev_idx = function
+      | 0 -> []
+      | n -> 
+        let idx =
+          if R.float r 100. > 90. then
+            let idx = R.int r len_anims in
+            if idx = prev_idx then
+              succ idx mod len_anims
+            else idx
+          else
+            prev_idx
+        in
+        idx :: aux ~prev_idx:idx (pred n)
+    in
+    aux ~prev_idx:0 length
+    (* |> CCList.rev  *)
+    |> CCArray.of_list
+  in
+  fun ~i ~v ->
+    let idx = anim_idxs.(i) in
+    let anim = anims.(idx) in
+    anim ~i ~v
+
 (*> goto problem: this makes 'f' into an infinite envelope...
   * problem if casing on value of 'i':
     * either the function won't support finite envelopes,
