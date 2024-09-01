@@ -182,9 +182,10 @@ let random_chronological_switch ~seed ~length anims =
     |> CCArray.of_list
   in
   fun ~i ~v ->
-    let idx = anim_idxs.(i) in
-    let anim = anims.(idx) in
-    anim ~i ~v
+    if i >= length then 0. else 
+      let idx = anim_idxs.(i) in
+      let anim = anims.(idx) in
+      anim ~i ~v
 
 (*> goto problem: this makes 'f' into an infinite envelope...
   * problem if casing on value of 'i':
