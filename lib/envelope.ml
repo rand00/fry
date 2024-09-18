@@ -167,6 +167,7 @@ let random_chronological_switch ~seed ~length anims =
       | 0 -> []
       | n -> 
         let idx =
+          (*> goto enable passing this pct as param*)
           if R.float r 100. > 90. then
             let idx = R.int r len_anims in
             if idx = prev_idx then
@@ -301,6 +302,12 @@ let points l ~i ~v =
 let adsr a d s r = [ a; d; s; r ] |> points
 
 let ramp ~length = points [ length, 1.0 ]
+let ramp_rev ~length = points [ 0.0, 1.0; length, 0.0 ]
+
+(*> Note: when using this with Inf.of_finite - pass 'length' > than square's 'length'
+  .. to control distance between squares
+*)
+let square ~length = points [ 0., 1.0; length, 1.0 ]
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
