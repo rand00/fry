@@ -265,4 +265,202 @@ let trace tag f ~i ~v =
   Printf.eprintf "envelope: i = %d, %s = %.2f%!\n" i tag r;
   r
 
+type pure_anim = i:int -> v:unit -> float
+
+module type FIELDS = sig
+
+  type t
+  val all : t list
+  val compare : t -> t -> int
+
+end
+
+module Make_multi(Fields : FIELDS) = struct
+
+  type dimensions = pure_anim array
+
+  module type MAP = sig
+
+    type field
+    type t
+
+    val init : (field -> pure_anim) -> t
+    val get : field -> t -> pure_anim
+    val map : (pure_anim -> pure_anim) -> t -> t
+
+  end
+
+  module Dimensions : MAP with type field = Fields.t = struct
+
+    type t = dimensions
+    type field = Fields.t
+
+    let keys = CCArray.of_list Fields.all
+
+    (*> Note: a map always has all keys*)
+    let get k arr =
+      let i, _ =
+        CCArray.find_idx (fun k' -> Fields.compare k k' = 0) keys
+        |> CCOption.get_exn_or "Anim_multi.get: key didn't exist (impossible)"
+      in
+      arr.(i)
+      
+    let map = CCArray.map
+                
+    let init init = keys |> CCArray.map init
+
+  end
+
+  type t = {
+    dimensions : Dimensions.t;
+    length : int;
+    duration : float;
+  }
+
+  let get k v = Dimensions.get k v.dimensions
+
+  let map f v = { v with dimensions = v.dimensions |> Dimensions.map f }
+
+  let init ~length ~duration init_dimensions =
+    { length; duration; dimensions = Dimensions.init init_dimensions }
+
+  module Compose = struct
+
+    module Random_chronological_switch = struct
+
+      (*Notes on the reasoning for this caching:
+        * I don't have a pure and indexed version of Random that doesn't leak memory
+          * a leaking version can be constructed - that also caches values
+            * so would not be better, and one could more easily make the mistake of
+              leaking
+        * .. so this cache has been made instead
+        * @why?
+          * I want to compose a lot of animation-snippets based on different random
+            seeds
+          * each pig DOM object is initialized with the same random seed
+          * => leading to _lots_ of Random initializations
+          * .. and as this runs on my server, with potential lots of requests
+            * I want this to be efficient
+        * @note; with this global cache - the initializations are even cached
+          across requests
+          * @note; as CCCache is used, based on an LRU, then it's okay to call
+            with random input-values
+      *)
+
+      module Cache_params = struct
+
+        type t = {
+          rand_seed : int;
+          n_anims : int;
+          resulting_length : int;
+        } [@@deriving eq, show]
+
+        let hash v = CCHash.(combine3
+            (int v.rand_seed)
+            (int v.n_anims)
+            (int v.resulting_length)
+        )
+
+      end
+
+      let make_anim_idxs =
+        (*> Note: should be fine with 256 - just an arbitrary choice
+          .. the most important thing is that calls are cached per request
+             .. and there should not be more than 256 different sets of params
+        *)
+        let cache = CCCache.lru ~eq:Cache_params.equal ~hash:Cache_params.hash 256 in
+        fun ~rand_seed ~n_anims ~resulting_length -> 
+          (* let cb ~in_cache i o = *)
+          (*   if in_cache then *)
+          (*     Format.eprintf "DEBUG: cache HIT!\n%!" *)
+          (*   else  *)
+          (*     Format.eprintf "DEBUG: cache updated! (%a)\n%!" Cache_params.pp *)
+          (*       Cache_params.{ rand_seed; n_anims; resulting_length } *)
+          (* in *)
+          Cache_params.{ rand_seed; n_anims; resulting_length }
+          |> CCCache.with_cache (* ~cb *) cache (fun params ->
+            (*goto use CCRandom?*)
+            let module R = Random.State in
+            let r = R.make [| rand_seed |] in
+            let rec aux ~prev_idx = function
+              | 0 -> []
+              | n -> 
+                let idx =
+                  (*> warning; I can't change values like this, as selected output
+                      now depends on this - can make into param instead *)
+                  if R.float r 100. > 90. then
+                    let idx = R.int r n_anims in
+                    if idx = prev_idx then
+                      succ idx mod n_anims
+                    else idx
+                  else
+                    prev_idx
+                in
+                idx :: aux ~prev_idx:idx (pred n)
+            in
+            aux ~prev_idx:0 resulting_length
+            (* |> CCList.rev  *)
+            |> CCArray.of_list
+          )
+
+      let make ~rand_seed anims =
+        let length =
+          anims |> CCArray.fold_left (fun max_length v ->
+            CCInt.max v.length max_length
+          ) 0
+        in
+        let duration =
+          anims |> CCArray.fold_left (fun max_duration v ->
+            CCFloat.max v.duration max_duration
+          ) 0.
+        in
+        let anim_idxs =
+          make_anim_idxs
+            ~rand_seed
+            ~n_anims:(CCArray.length anims)
+            ~resulting_length:length
+        in
+        init ~length ~duration (fun field ->
+          fun ~i ~v ->
+            let i = i mod length in
+            let idx = anim_idxs.(i) in
+            let anim = anims.(idx) in
+            (get field anim) ~i ~v
+        )
+
+    end
+
+    (*goto idea; try making a random-composition function that
+      * choose random spots from each animation
+      * change the rate of change based on some envelope arg?
+    *)
+
+  end
+
+  (*> Note: ranges is a list of absolute time-positions that each specify a range*)
+  let extract ~fps ~ranges anim =
+    let ranges =
+      ranges |> CCList.map (fun (start, stop) ->
+        start *. fps, stop *. fps
+      )
+    in
+    let anim_length = float anim.length in
+    let dimensions =
+      anim.dimensions |> Dimensions.map (fun anim ->
+        let anim = Inf.of_finite ~length:anim_length anim in
+        extract ~ranges anim
+      )
+    in
+    let length =
+      ranges |> CCList.fold_left (fun acc (start, stop) ->
+        acc +. (stop -. start)
+      ) 0.
+    in
+    let duration = length /. fps in
+    let length = truncate length in
+    { length; duration; dimensions }
+
+  (* module Range_extraction *)
+
+end
 

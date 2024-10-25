@@ -6,7 +6,12 @@
          ))
  (libraries
   containers
+  containers-data
   )
+ (preprocess
+  (pps
+   ppx_deriving.std
+   ))
  )
 
 
