@@ -1,5 +1,11 @@
 open Lwt_react
 
+(*goto
+  * possibly rename module to Letwave
+    * at this is cheeky, and hints at more generality
+  * include 'Multi' module from 'svin' project
+*)
+
 let pure x ~i ~v = x
 let const = pure
 
