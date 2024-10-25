@@ -1,5 +1,6 @@
 # Roadmap / feature-ideas 
 
+* make examples for using 'Wavelet' module (prev 'Envelope') for animations (e.g. CSS + Tyxml)
 * idea for Envelope; should enable creation of a 'global envelope' that morphs between envelopes 
   (constructive inteference)
 * @idea; allow user to specify that beat should have limited lifetime?
