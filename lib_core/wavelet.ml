@@ -365,9 +365,12 @@ module Make_multi(Fields : FIELDS) = struct
         (*> Note: should be fine with 256 - just an arbitrary choice
           .. the most important thing is that calls are cached per request
              .. and there should not be more than 256 different sets of params
-        *)
+                used within this request *)
+        (*> goto think about if this is okay to make global -
+            possibly make into a state-generating wrapper*)
         let cache = CCCache.lru ~eq:Cache_params.equal ~hash:Cache_params.hash 256 in
-        fun ~rand_seed ~n_anims ~resulting_length -> 
+        fun ~rand_seed ~n_anims ~resulting_length ->
+          (*> goto remove dependence on deriving.std ppx?*)
           (* let cb ~in_cache i o = *)
           (*   if in_cache then *)
           (*     Format.eprintf "DEBUG: cache HIT!\n%!" *)
@@ -386,6 +389,9 @@ module Make_multi(Fields : FIELDS) = struct
                 let idx =
                   (*> warning; I can't change values like this, as selected output
                       now depends on this - can make into param instead *)
+                  (*> goto this _should_ anyway be a param for user to choose
+                      .. @idea; could be a pure lambda taking the random float as input
+                  *)
                   if R.float r 100. > 90. then
                     let idx = R.int r n_anims in
                     if idx = prev_idx then
@@ -445,6 +451,7 @@ module Make_multi(Fields : FIELDS) = struct
     let anim_length = float anim.length in
     let dimensions =
       anim.dimensions |> Dimensions.map (fun anim ->
+        (*> goto maybe make this into a flag-param - maybe one doesn't want looping*)
         let anim = Inf.of_finite ~length:anim_length anim in
         extract ~ranges anim
       )
