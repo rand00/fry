@@ -1,6 +1,4 @@
 
-(*goto include 'Multi' module from 'svin' project*)
-
 let pure x ~i ~v = x
 let const = pure
 
