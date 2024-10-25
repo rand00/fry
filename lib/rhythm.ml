@@ -74,6 +74,9 @@ module Bool = struct
     in
     to_string bool_to_string v
 
+  let o = false
+  let x = true
+
 end
 
 module Option = struct
