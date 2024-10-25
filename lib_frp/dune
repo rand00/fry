@@ -1,10 +1,11 @@
 (library
- (name fry)
- (public_name fry)
+ (name fry_frp)
+ (public_name fry.frp)
  (flags (:standard
          (-w -27-33-26-9-21-32)
          ))
  (libraries
+  fry.core
   lwt
   lwt_react
   containers

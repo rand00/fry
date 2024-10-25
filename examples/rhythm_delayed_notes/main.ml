@@ -1,12 +1,14 @@
 open Lwt_react
 open Lwt.Syntax
+open Fry_core
+open Fry_frp
 
 let bpm = 120. 
 let bpm_s = S.const bpm
 
-let beat_e = Fry.Beat.make ~bpm_s
+let beat_e = Beat.make ~bpm_s
 
-let rhythm = Fry.Rhythm.(
+let rhythm = Rhythm.(
   [ true; true; true; true ] |> Bool.mapi (fun i ->
     if i = 2 then `Delay else `Normal
   )
@@ -15,14 +17,14 @@ let rhythm = Fry.Rhythm.(
 let rhythm_e =
   beat_e
   |> E.fmap (fun tick ->
-    Fry.Rhythm.Option.get ~tick rhythm |> Option.map (fun v ->
+    Rhythm.Option.get ~tick rhythm |> Option.map (fun v ->
       tick, v
     )
   )
   |> E.map_s (fun (tick, v) -> match v with
     | `Normal -> Lwt.return tick
     | `Delay -> 
-      let+ () = Lwt_unix.sleep @@ Fry.Time.of_bpm bpm /. 2. in
+      let+ () = Lwt_unix.sleep @@ Time.of_bpm bpm /. 2. in
       tick
   )
 
@@ -35,4 +37,4 @@ let () =
   let sleep = Lwt_unix.sleep in
   let max_bpm = 20000. in
   let time = Unix.gettimeofday in
-  Lwt_main.run @@ Fry.Beat.run ~sleep ~time ~max_bpm ()
+  Lwt_main.run @@ Beat.run ~sleep ~time ~max_bpm ()

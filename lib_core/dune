@@ -1,16 +1,13 @@
 (library
- (name fry_io)
- (public_name fry.io)
+ (name fry_core)
+ (public_name fry.core)
  (flags (:standard
          (-w -27-33-26-9-21-32)
          ))
  (libraries
-  fry.core
-  fry.frp
-  lwt
-  lwt_react
-  notty.lwt
-  gg
   containers
   )
  )
+
+
+

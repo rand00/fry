@@ -1,5 +1,6 @@
 open Lwt_react 
 open Lwt.Infix
+open Fry_core
 
 (*> goto don't expose fps_supd*)
 let fps_s, fps_supd = S.create 333.

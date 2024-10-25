@@ -1,21 +1,23 @@
 open Lwt_react
+open Fry_core
+open Fry_frp
 
 let bpm = 40.
 let bpm_s = S.const bpm
 
-let beat_e = Fry.Beat.make ~bpm_s
+let beat_e = Beat.make ~bpm_s
 
 let render_fps = 60.
 
 let render_tick_e =
-  let bpm_s = S.const @@ Fry.Time.bpm_of_fps render_fps in
-  Fry.Beat.make ~bpm_s
+  let bpm_s = S.const @@ Time.bpm_of_fps render_fps in
+  Beat.make ~bpm_s
   
 (*> Note: Here we compose different envelopes to make a complex one*)
 let envelope =
-  let duration = Fry.Time.of_bpm bpm /. 1.5 in
+  let duration = Time.of_bpm bpm /. 1.5 in
   let length = duration *. render_fps in
-  Fry.Envelope.(
+  Wavelet.(
     mul
       (sine ~length)
       (
@@ -29,7 +31,7 @@ let envelope =
   )
 
 let envelope_s =
-  beat_e |> Fry.Envelope.create ~tick_e:render_tick_e ~f:envelope
+  beat_e |> Envelope.create ~tick_e:render_tick_e ~f:envelope
 
 let _out =
   Fry_io.Term.Out.envelopes ~typ:`Line [ envelope_s ]
@@ -39,7 +41,7 @@ let () =
   let sleep = Lwt_unix.sleep in
   let time = Unix.gettimeofday in
   let max_bpm = 20000. in
-  Lwt_main.run @@ Fry.Beat.run ~sleep ~time ~max_bpm ()
+  Lwt_main.run @@ Beat.run ~sleep ~time ~max_bpm ()
 
 
   

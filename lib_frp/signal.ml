@@ -1,4 +1,5 @@
 open Lwt_react
+open Fry_core
 
 let sample ~at s =
   s |> S.sample (fun _ v -> v) at

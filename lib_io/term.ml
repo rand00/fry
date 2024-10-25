@@ -1,11 +1,13 @@
 open Lwt_react
 open Gg
-
+open Fry_core
+open Fry_frp
+    
 (*goto rename, to what?*)
 module Term = Notty_lwt.Term 
 
 let (term_s : Term.t option S.t), term_supd =
-  S.create ~eq:Fry.Eq.never None
+  S.create ~eq:Eq.never None
 
 (*> goto put the input/output helpers in separate scopes?*)
 
@@ -17,7 +19,7 @@ let events_e =
       Notty_lwt.Term.events term |> E.of_stream
     )
   )
-  |> E.switch (Fry.Event.never ())
+  |> E.switch (Event.never ())
 
 let mouse_drag_abs_e =
   events_e |> E.fmap (function
@@ -59,7 +61,7 @@ let keys_e =
 (*goto make a Sample module initiated with tick_e?*)
 let sample_dimensions ~at =
   let init = 0, 0 in
-  let eq = Fry.Tuple.eq2 CCInt.equal CCInt.equal in
+  let eq = Tuple.eq2 CCInt.equal CCInt.equal in
   let aux _ term = Option.map Term.size term in
   S.sample aux at term_s
   |> E.map (function
@@ -115,13 +117,13 @@ module Out = struct
     |> I.vcat
 
   let envelopes ?(typ=`Line) envelopes =
-    let envelopes_s = envelopes |> Fry.Signal.of_signals ~eq:CCFloat.equal in
+    let envelopes_s = envelopes |> Signal.of_signals ~eq:CCFloat.equal in
     let envelopes_e = envelopes_s |> S.changes in
     let dimensions_s = sample_dimensions ~at:envelopes_e in
-    S.l2 ~eq:Fry.Eq.never Fry.Tuple.mk2
+    S.l2 ~eq:Eq.never Tuple.mk2
       dimensions_s
       envelopes_s
-    |> S.map ~eq:Fry.Eq.never (fun ((w, h), envelopes) ->
+    |> S.map ~eq:Eq.never (fun ((w, h), envelopes) ->
       let len = List.length envelopes in
       let w_box = float w /. float len |> truncate in
       let mk_image = match typ with
