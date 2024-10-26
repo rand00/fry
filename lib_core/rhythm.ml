@@ -174,13 +174,16 @@ end
 module Poly = struct
 
   (*> Note: A helper to make a set of polyrhythms into a single static one.
-      .. the resulting rhythm will have length = GCD lengths *)
+      .. the resulting rhythm will have length = GCD lengths
+      * warning: all rhythms should have length > 0
+  *)
   let merge ~f rhythms =
     let rhythms_arr =
       rhythms
       |> CCArray.of_list
       |> CCArray.map CCArray.of_list
     in
+    assert (rhythms_arr |> CCArray.for_all (fun a -> CCArray.length a > 0));
     let rec aux i acc =
       let note_idxs =
         rhythms_arr
