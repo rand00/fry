@@ -171,3 +171,34 @@ module Euclidean = struct
 
 end
 
+module Poly = struct
+
+  (*> Note: A helper to make a set of polyrhythms into a single static one.
+      .. the resulting rhythm will have length = GCD lengths *)
+  let merge ~f rhythms =
+    let rhythms_arr =
+      rhythms
+      |> CCArray.of_list
+      |> CCArray.map CCArray.of_list
+    in
+    let rec aux i acc =
+      let note_idxs =
+        rhythms_arr
+        |> CCArray.map (fun rhythm -> i mod CCArray.length rhythm)
+      in
+      let notes =
+        rhythms_arr
+        |> CCArray.mapi (fun i_rhythm rhythm -> rhythm.(note_idxs.(i_rhythm)))
+        |> CCArray.to_list
+      in
+      let v = f notes in
+      if i <> 0 && CCArray.for_all (CCInt.equal 0) note_idxs then
+        acc
+      else 
+        let acc = v :: acc in
+        aux (succ i) acc
+    in
+    aux 0 []
+    |> CCList.rev
+
+end
