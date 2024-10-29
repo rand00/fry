@@ -50,11 +50,13 @@ let one ~i ~v = 1.
 let apply op f g ~i ~v = op (f ~i ~v) (g ~i ~v)
 
 let add f g = apply (+.) f g
-let sub f g = apply (-.) f g
+(*> Warning: the argument-ordering is made intuitive for piping, not normal application*)
+let sub g f = apply (-.) f g
 let mul f g = apply ( *. ) f g
 
 let and_ = mul
 (*> Note:
+  * warning: the argument-ordering is made intuitive for piping, not normal application
   * warning: the continuity of the output of this depends on the given
     envelopes
     * e.g.
@@ -65,7 +67,7 @@ let and_ = mul
     * though this semantics also enables interesting switch-semantics
       e.g. by multiplying left envelope by a 'boolean' filter-envelope
 *)
-let or_ ?(eps=0.0000001) f g =
+let or_ ?(eps=0.0000001) g f =
   let aux fv gv = if fv > eps then fv else gv in
   apply aux f g
 
@@ -184,7 +186,9 @@ let sum fs ~i ~v = CCList.fold_left (fun acc f -> acc +. f ~i ~v) 0. fs
 
 let cmul c f = mul f @@ pure c
 let cadd c f = add f @@ pure c
-let csub c f = sub f @@ pure c
+let csub c f = sub (pure c) f
+(*< Note subtraction is not commutative, and 'sub' is already made for piping,
+    of operators, which means opposite argument-order *)
 
 let cmin c f = min f @@ pure c
 let cmax c f = max f @@ pure c
