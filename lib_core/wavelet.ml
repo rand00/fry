@@ -260,7 +260,7 @@ let square ~length = points [ 0., 1.0; length, 1.0 ]
 
 let trace tag f ~i ~v =
   let r = f ~i ~v in
-  Printf.eprintf "envelope: i = %d, %s = %.2f%!\n" i tag r;
+  Format.eprintf "envelope: i = %d, %s = %.2f\n%!" i tag r;
   r
 
 type pure_anim = i:int -> v:unit -> float
