@@ -32,25 +32,40 @@ let mouse_drag_abs_e =
    *   C.log "DEBUG: mouse drag abs %.2f %.2f" (V2.x v2) (V2.y v2)
    * ) *)
 
-let mouse_drag_rel_e =
-  let init = ((V2.zero, []), None)
+let mouse_drag_rel_e' =
+  let init = `Release, None
   in
   mouse_drag_abs_e
   |> E.fold (fun (last_rel, last_abs) -> function
     | `Drag (abs, mods) ->
       begin match last_abs with
         | Some last_abs -> 
-          (V2.(abs - last_abs), mods), Some abs
+          `Drag (V2.(abs - last_abs), mods), Some abs
         | None ->
-          (V2.zero, mods), Some abs
+          `Drag (V2.zero, mods), Some abs
       end
-    | `Release -> last_rel, None
+    | `Release -> `Release, None
   ) init
   |> E.map fst
-  |> E.map (fun (v2, mods) -> V2.(mul v2 (v 1. (-1.))), mods)
+  |> E.map (function
+    | `Release as v -> v
+    | `Drag (v2, mods) ->
+      (*> goto this should also be the case for mouse_drag_abs_e...
+        .. but that would depend on height of terminal.. 
+      *)
+      let inverted_rel = V2.(mul v2 (v 1. (-1.))) in
+      `Drag (inverted_rel, mods)
+  )
   (* |> E.trace (fun v2 ->
    *   C.log "DEBUG: mouse drag rel %.2f %.2f" (V2.x v2) (V2.y v2)
    * ) *)
+
+let mouse_drag_rel_e =
+  mouse_drag_rel_e'
+  |> E.map (function
+    | `Release -> V2.zero, []
+    | `Drag v -> v
+  )
 
 let keys_e = 
   events_e |> E.fmap (function
