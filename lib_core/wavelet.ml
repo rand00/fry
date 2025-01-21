@@ -227,7 +227,16 @@ let normalize_on_i ?(cut_negative=true) ~length ~v_static f =
     * you can't make an unordered list of absolute values by mistake
     * you can insert element in envelope without updating later values
 *)
-let points l ~i ~v =
+let points_array arr =
+  let prev_abs_x = ref 0. in
+  let arr_absx =
+    arr |> CCArray.map (fun (rel_x, y) ->
+      let abs_x = !prev_abs_x +. rel_x in
+      prev_abs_x := abs_x;
+      abs_x, y
+    )
+  in
+  fun ~i ~v -> 
   (*> Note: depends on i being in between v2.x and v2'.x*)
   let interp_aux i v2 v2' =
     let diff_x = fst v2' -. fst v2 in
@@ -240,30 +249,31 @@ let points l ~i ~v =
       snd v2 +. y_rel
   in
   let i = float i in
-  (*> goto idea optimization;
-    * cache 'l' between runs as an array of absolute x values, y value
-      * .. these will via given semantics of input-list be ordered
-        * which means we can do a binary search on array
-          * which means we get O(log(n)) instead of O(n)
-  *)
-  let rec aux ~vec_prev = function
-    | [] -> 0.
-    | vec_rel :: rest -> 
-      let x = fst vec_prev +. fst vec_rel in
-      let vec_abs = x, snd vec_rel in
-      if i <= x then
-        interp_aux i vec_prev vec_abs
-      else
-        aux ~vec_prev:vec_abs rest
-  in
-  aux ~vec_prev:(0., 0.) l
+  let cmp (x, _) (x', _) = CCFloat.compare x x' in
+  let key = (i, 0.) in (*< Note, 0. is ignored according to 'cmp'*)
+  match CCArray.bsearch ~cmp key arr_absx with
+  | `At i_arr ->
+    if CCArray.length arr_absx < i_arr+2 then
+      0.
+    else 
+      interp_aux i arr_absx.(i_arr) arr_absx.(i_arr+1)
+  | `All_lower -> 0.
+  | `All_bigger ->
+    if i >= 0. then
+      interp_aux i (0., 0.) arr_absx.(0)
+    else 0.
+  | `Just_after i_arr ->
+    interp_aux i arr_absx.(i_arr) arr_absx.(i_arr+1)
+  | `Empty -> 0.
+
+let points l = l |> CCArray.of_list |> points_array
 
 let adsr a d s r = [ a; d; s; r ] |> points
 
 let ramp ~length = points [ length, 1.0 ]
 let ramp_rev ~length = points [ 0.0, 1.0; length, 0.0 ]
 
-(*> Note: when using this with Inf.of_finite - pass 'length' > than square's 'length'
+(*> Note: when using this with Inf.of_finite - pass a 'length' > square's 'length'
   .. to control distance between squares
 *)
 let square ~length = points [ 0., 1.0; length, 1.0 ]
@@ -321,6 +331,10 @@ module Make_multi(Fields : FIELDS) = struct
 
   type t = {
     dimensions : Dimensions.t;
+    (*> goto should length become float like all other ~length params
+      .. which also makes sense for user, and this code doesn't use the fact that it's
+         an integer anyway
+    *)
     length : int;
     duration : float;
   }
