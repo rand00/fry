@@ -240,6 +240,12 @@ let points l ~i ~v =
       snd v2 +. y_rel
   in
   let i = float i in
+  (*> goto idea optimization;
+    * cache 'l' between runs as an array of absolute x values, y value
+      * .. these will via given semantics of input-list be ordered
+        * which means we can do a binary search on array
+          * which means we get O(log(n)) instead of O(n)
+  *)
   let rec aux ~vec_prev = function
     | [] -> 0.
     | vec_rel :: rest -> 
