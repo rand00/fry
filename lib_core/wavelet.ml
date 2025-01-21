@@ -254,7 +254,7 @@ let points_array arr =
   match CCArray.bsearch ~cmp key arr_absx with
   | `At i_arr ->
     if CCArray.length arr_absx < i_arr+2 then
-      0.
+      snd arr_absx.(i_arr)
     else 
       interp_aux i arr_absx.(i_arr) arr_absx.(i_arr+1)
   | `All_lower -> 0.
