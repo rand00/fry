@@ -13,14 +13,14 @@ let render_tick_e =
   Beat.make ~bpm_s
 
 let bpm_sine_s =
-  let f =
+  let wavelet =
     let duration = 0.5 (*secs*) in
     let length = duration *. render_fps in
     Wavelet.(sine ~length |> Inf.of_finite ~length)
   in
   (*> Note: A single event that triggers an infinite envelope*)
   Event.create_instant ~sleep
-  |> Envelope.create ~tick_e:render_tick_e ~f
+  |> Envelope.create ~tick_e:render_tick_e ~wavelet
   |> S.map (fun v -> 10. +. 20. *. v)
 
 let beat_e = Beat.make ~bpm_s:bpm_sine_s
@@ -48,12 +48,12 @@ let envelope =
     |> phase_correct ~prev_length ~length
 
 let envelope_s =
-  let env_s =
+  let wavelet_s =
     bpm_sine_s
     |> Signal.with_prev_value
     |> S.map ~eq:Eq.never envelope
   in
-  beat_e |> Envelope.of_env_signal ~tick_e:render_tick_e ~f:env_s
+  beat_e |> Envelope.create' ~tick_e:render_tick_e ~wavelet_s
 
 let _out = 
   Fry_io.Term.Out.envelopes ~typ:`Line [ envelope_s ]

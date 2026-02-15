@@ -31,7 +31,7 @@ let envelope =
   )
 
 let envelope_s =
-  beat_e |> Envelope.create ~tick_e:render_tick_e ~f:envelope
+  beat_e |> Envelope.create ~tick_e:render_tick_e ~wavelet:envelope
 
 let _out =
   Fry_io.Term.Out.envelopes ~typ:`Line [ envelope_s ]

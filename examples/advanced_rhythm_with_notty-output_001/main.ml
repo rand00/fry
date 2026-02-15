@@ -93,12 +93,16 @@ let env_length = env_duration *. render_fps
 
 (*> Note: For each rhythmic beat, a smooth envelope is created*)
 let envelope_01_s =
-  rhythm_01_e |> Envelope.create ~tick_e:render_tick_e
-    ~f:(Wavelet.sine ~length:env_length)
+  rhythm_01_e
+  |> Envelope.create
+    ~tick_e:render_tick_e
+    ~wavelet:(Wavelet.sine ~length:env_length)
 
 let envelope_02_s =
-  rhythm_02_e |> Envelope.create ~tick_e:render_tick_e
-    ~f:(Wavelet.sine ~length:env_length)
+  rhythm_02_e
+  |> Envelope.create
+    ~tick_e:render_tick_e
+    ~wavelet:(Wavelet.sine ~length:env_length)
 
 let _out =
   Fry_io.Term.Out.envelopes ~typ:`Box

@@ -2,7 +2,7 @@ open Lwt_react
 open Fry_core
 
 (*> Note that clamping on [0;1] happens when acc_envs = Some _*)
-let of_env_signal ?(acc_envs=None) ~tick_e ~f e =
+let create' ?(acc_envs=None) ~tick_e ~wavelet_s e =
   let s = 
     e
     |> Event.add_index
@@ -10,18 +10,18 @@ let of_env_signal ?(acc_envs=None) ~tick_e ~f e =
     |> S.hold ~eq:Eq.never None
   in
   let sampled_s =
-    S.l2 ~eq:Eq.never Tuple.mk2 f s 
+    S.l2 ~eq:Eq.never Tuple.mk2 wavelet_s s 
   in
   S.sample (fun _ v -> v) tick_e sampled_s
-  |> E.fold (fun (last_i, _env, env_i, envs as acc) -> function
-    | _, None -> acc (*< Note: before any event has happened*)
-    | f, Some (i, v) ->
-      let f ~v ~i = f ~i ~v in
-      let env_partial = f ~v in
+  |> E.fold (fun (last_evt_i, _env, env_i, envs as acc) -> function
+    | _      , None -> acc (*< Note: before any event has happened*)
+    | wavelet, Some (evt_i, v) ->
+      let wavelet ~v ~i = wavelet ~i ~v in
+      let wavelet_partial = wavelet ~v in
       (*< Note: as OCaml wants a specific param order*)
-      let env_i = if Int.equal last_i i then succ env_i else 0 in
-      let env, envs = match acc_envs with
-        | None -> f ~v ~i:env_i, []
+      let env_i = if Int.equal last_evt_i evt_i then succ env_i else 0 in
+      let env_v, envs = match acc_envs with
+        | None -> wavelet ~v ~i:env_i, []
         | Some length ->
           let envs =
             envs |> CCList.map (fun (f, prev_env_i) ->
@@ -30,26 +30,26 @@ let of_env_signal ?(acc_envs=None) ~tick_e ~f e =
           in
           let envs = 
             if env_i = 0 then 
-              (env_partial, 0) :: envs
+              (wavelet_partial, 0) :: envs
               |> CCList.take length
             else envs 
           in
-          let env =
+          let env_acc =
             envs
             |> CCList.fold_left (fun acc (f, env_i) ->
               acc +. f ~i:env_i |> Wavelet.clamp_float 0. 1.
             ) 0.
           in
-          env, envs
+          env_acc, envs
       in
-      i, env, env_i, envs
+      evt_i, env_v, env_i, envs
   ) (-1, 0., -1, [])
-  |> E.map (fun (_, env, _, _) -> env)
+  |> E.map (fun (_, env_v, _, _) -> env_v)
   |> S.hold ~eq:CCFloat.equal 0.
 
-let create ?(acc_envs=None) ~tick_e ~f e =
-  let f = S.const f in
-  of_env_signal ~acc_envs ~tick_e ~f e
+let create ?(acc_envs=None) ~tick_e ~wavelet e =
+  let wavelet_s = S.const wavelet in
+  create' ~acc_envs ~tick_e ~wavelet_s e
 
 module Trigger = struct
 
