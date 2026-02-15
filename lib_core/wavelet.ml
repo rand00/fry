@@ -305,7 +305,8 @@ module Make_multi(Fields : FIELDS) = struct
     val init : (field -> pure_anim) -> t
     val get : field -> t -> pure_anim
     val map : (pure_anim -> pure_anim) -> t -> t
-
+    val mapi : (field -> pure_anim -> pure_anim) -> t -> t
+    
   end
 
   module Dimensions : MAP with type field = Fields.t = struct
@@ -319,11 +320,14 @@ module Make_multi(Fields : FIELDS) = struct
     let get k arr =
       let i, _ =
         CCArray.find_idx (fun k' -> Fields.compare k k' = 0) keys
-        |> CCOption.get_exn_or "Anim_multi.get: key didn't exist (impossible)"
+        |> CCOption.get_exn_or
+          "Wavelet.Make_multi.Dimensions.get: key didn't exist (impossible)"
       in
       arr.(i)
       
     let map = CCArray.map
+
+    let mapi f arr = CCArray.mapi (fun i v -> f (keys.(i)) v) arr
                 
     let init init = keys |> CCArray.map init
 
@@ -343,6 +347,8 @@ module Make_multi(Fields : FIELDS) = struct
 
   let map f v = { v with dimensions = v.dimensions |> Dimensions.map f }
 
+  let mapi f v = { v with dimensions = v.dimensions |> Dimensions.mapi f }
+  
   let init ~length ~duration init_dimensions =
     { length; duration; dimensions = Dimensions.init init_dimensions }
 
