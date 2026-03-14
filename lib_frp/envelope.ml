@@ -2,7 +2,7 @@ open Lwt_react
 open Fry_core
 
 (*> Note that clamping on [0;1] happens when acc_envs = Some _*)
-let create' ?(acc_envs=None) ~tick_e ~wavelet_s e =
+let create' ?(init=0.) ?(acc_envs=None) ~tick_e ~wavelet_s e =
   let s = 
     e
     |> Event.add_index
@@ -43,13 +43,13 @@ let create' ?(acc_envs=None) ~tick_e ~wavelet_s e =
           env_acc, envs
       in
       evt_i, env_v, env_i, envs
-  ) (-1, 0., -1, [])
+  ) (-1, init, -1, [])
   |> E.map (fun (_, env_v, _, _) -> env_v)
-  |> S.hold ~eq:CCFloat.equal 0.
+  |> S.hold ~eq:CCFloat.equal init
 
-let create ?(acc_envs=None) ~tick_e ~wavelet e =
+let create ?(init=0.) ?(acc_envs=None) ~tick_e ~wavelet e =
   let wavelet_s = S.const wavelet in
-  create' ~acc_envs ~tick_e ~wavelet_s e
+  create' ~init ~acc_envs ~tick_e ~wavelet_s e
 
 module Trigger = struct
 
